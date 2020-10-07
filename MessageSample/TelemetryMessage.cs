@@ -31,7 +31,7 @@ namespace MessageSample
             var temperature  = 0;
             var humidity = 0;
 
-            for (int count = 0; count < MessageCount; count++)
+            for (var count = 0; count < MessageCount; count++)
             {
                 temperature++;
                 humidity++;
@@ -65,10 +65,10 @@ namespace MessageSample
                 return;
             }
 
-            string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+            var messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
             Console.WriteLine($"\t{DateTime.Now}> Received message: {messageData}");
 
-            int propCount = 0;
+            var propCount = 0;
             foreach (var prop in receivedMessage.Properties)
             {
                 Console.WriteLine($"\t\tProperty[{propCount++}> Key={prop.Key} : Value={prop.Value}");

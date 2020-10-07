@@ -20,8 +20,6 @@ namespace MessageSample
         public static int Main(string[] args)
         {
             var simDeviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
-
-
             var sample = new TelemetryMessage(simDeviceClient);
             sample.RunSampleAsync().GetAwaiter().GetResult();
 
