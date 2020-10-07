@@ -1,1 +1,42 @@
-# azure-iot-mqtt-features
+# Azure IoT MQTT features
+
+## Test scenarios
+
+### Client receives all C2D messages without setting clean session
+
+* Subscribe to `devices/{device_id}/messages/devicebound/#`
+* Send C2D and verify client receive
+* Shutdown client
+* Send another C2D
+* Start client and subscribe again
+* Verify that client receives the message sent while being disconnected
+
+### Client can send D2C messages with QoS 0
+
+* Send D2C with QoS 0
+* Verify that "most of them"* are received via IoT Hub
+
+\* With QoS 0 there might be message loss but in normal good networking conditions, most messages are expected to be received
+
+### Client can set Will message
+
+* Client set Will message in the CONNECT packet and sets Will RETAIN
+* Client use `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8` as the Will topic name
+* Forcefully shutdown client (ctrl+c)
+* Verify Will message received
+* Verify the message has the `iothub-MessageType` property with a value of Will assigned to it
+* Check whether `x-opt-retain` application property exists in the message (not documented what is expected)
+
+### Client can send retained messages
+
+* Client send D2C message with RETAIN flag set to 1
+* Verify received
+* Verify `x-opt-retain` application property in the message
+
+### Client can authentication with certificates
+
+### Client messages can be routed (optional)
+
+* Setup routing as described in https://stackoverflow.com/questions/51160000/azure-iothub-devicemessage-and-route-filter
+* Send D2C to topic `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8`
+* Verify routing is applied
