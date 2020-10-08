@@ -1,18 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
 namespace MessageSample
 {
-    public class TelemetryMessage
+    public class Device
     {
         private readonly DeviceClient deviceClient;
 
-        public TelemetryMessage(DeviceClient deviceClient)
+        public Device(DeviceClient deviceClient)
         {
             this.deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
@@ -26,7 +23,7 @@ namespace MessageSample
         private async Task SendEventAsync()
         {
             const int MessageCount = 5;
-            Console.WriteLine($"Device sending {MessageCount} messages to IoT Hub...\n");
+            Console.WriteLine($"Device sending {MessageCount} messages to IoT Hub...\n"); // d2c
 
             var temperature  = 0;
             var humidity = 0;

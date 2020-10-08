@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubConsumer", "IotHubConsumer\IotHubConsumer.csproj", "{3D198647-0802-4237-A12F-6FDEC67269B5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubDevice", "IotHubDevice\IotHubDevice.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D198647-0802-4237-A12F-6FDEC67269B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D198647-0802-4237-A12F-6FDEC67269B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D198647-0802-4237-A12F-6FDEC67269B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D198647-0802-4237-A12F-6FDEC67269B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F614907D-C166-435F-8292-28118209EE41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F614907D-C166-435F-8292-28118209EE41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F614907D-C166-435F-8292-28118209EE41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F614907D-C166-435F-8292-28118209EE41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

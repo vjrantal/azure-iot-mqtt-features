@@ -15,12 +15,12 @@ namespace MessageSample
         // - pass this value as a command-prompt argument
         // - set the IOTHUB_MODULE_CONN_STRING environment variable 
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string connectionString = Environment.GetEnvironmentVariable("IOTHUB_MODULE_CONN_STRING");
+        private static string connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString");
 
         public static int Main(string[] args)
         {
             var simDeviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
-            var sample = new TelemetryMessage(simDeviceClient);
+            var sample = new Device(simDeviceClient);
             sample.RunSampleAsync().GetAwaiter().GetResult();
 
             Console.WriteLine("Done.\n");
