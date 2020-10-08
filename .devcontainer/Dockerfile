@@ -17,12 +17,10 @@ ARG TERRAFORM_VERSION=0.13.4
 ARG TFLINT_VERSION=0.20.2
 
 RUN apt-get update \
-    && apt-get -y install --no-install-recommends apt-utils 2>&1 \
-    # Verify git, process tools, lsb-release (common in install instructions for CLIs), unzip installed
-    && apt-get -y install git procps lsb-release unzip \
+    && apt-get -y install --no-install-recommends build-essential \
     # Install the Azure CLI
     && curl -sL https://aka.ms/InstallAzureCLIDeb | bash \
-    # Install AzDO CLI
+    # Install Azure IOT CLI
     && az extension add --name azure-iot \
     # Install Terraform
     && mkdir -p /tmp/docker-downloads \
