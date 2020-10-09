@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubConsumer", "IotHubConsumer\IotHubConsumer.csproj", "{3D198647-0802-4237-A12F-6FDEC67269B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubDevice", "IotHubDevice\IotHubDevice.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device", "Device\Device.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

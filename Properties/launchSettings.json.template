@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "MessageSample": {
+    "Device": {
       "commandName": "Project",
       "environmentVariables": {
         "IotHubConnectionString": "<yourModuleConnectionString>",
