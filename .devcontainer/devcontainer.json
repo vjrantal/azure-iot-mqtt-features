@@ -19,7 +19,8 @@
 	"extensions": [
 		"ms-dotnettools.csharp",
 		"ms-azuretools.vscode-docker",
-		"hashicorp.terraform"
+		"hashicorp.terraform",
+		"ms-vsliveshare.vsliveshare"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
