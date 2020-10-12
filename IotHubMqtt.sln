@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubConsumer", "IotHubCon
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device", "Device\Device.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{F737D198-2405-422D-B4C5-A6AC1EE8E877}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{F614907D-C166-435F-8292-28118209EE41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F614907D-C166-435F-8292-28118209EE41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F614907D-C166-435F-8292-28118209EE41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
