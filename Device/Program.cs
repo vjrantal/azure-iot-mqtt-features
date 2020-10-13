@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.Client;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
+using MQTTnet.Formatter;
 
 namespace MessageSample
 {
@@ -22,7 +23,7 @@ namespace MessageSample
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         // For this sample either
         // - pass this value as a command-prompt argument
-        // - set the IOTHUB_MODULE_CONN_STRING environment variable 
+        // - set the IOTHUB_MODULE_CONN_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString").Split(';');
 
@@ -36,22 +37,24 @@ namespace MessageSample
             var factory = new MqttFactory();
             var mqttClient = factory.CreateMqttClient();
             var password = CreateToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
+
             var options = new MqttClientOptionsBuilder()
-                // .WithWebSocketServer("broker.hivemq.com:8000/mqtt")
                 .WithTcpServer(hubAddress, 8883)
                 .WithCredentials(hubUser, password)
+                .WithClientId(deviceId)
+                .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithTls()
                 .Build();
 
             await mqttClient.ConnectAsync(options, CancellationToken.None);
 
             mqttClient.UseDisconnectedHandler(async e =>
             {
-                // .WithWebSocketServer("broker.hivemq.com:8000/mqtt")
                 await Task.Delay(TimeSpan.FromSeconds(5));
 
                 try
                 {
-                    await mqttClient.ConnectAsync(options, CancellationToken.None); // Since 3.0.5 with CancellationToken
+                    await mqttClient.ConnectAsync(options, CancellationToken.None);
                 }
                 catch
                 {
@@ -59,16 +62,10 @@ namespace MessageSample
                 }
             });
 
-            // var simDeviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
-            // var sample = new Device(simDeviceClient);
-            // sample.RunSampleAsync().GetAwaiter().GetResult();
-
-            // Console.WriteLine("Done.\n");
-
             var message = new MqttApplicationMessageBuilder()
                 .WithTopic("devices/" + deviceId + "/messages/events/")
                 .WithPayload("Hello World")
-                .WithExactlyOnceQoS()
+                .WithAtLeastOnceQoS()
                 .WithRetainFlag()
                 .Build();
 
