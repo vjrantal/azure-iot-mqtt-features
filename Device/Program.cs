@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -26,26 +27,24 @@ namespace MessageSample
         // - set the IOTHUB_MODULE_CONN_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString").Split(';');
+        private static string deviceId = connectionString[1].Split('=', 2)[1];
+        private static string sharedAccessKey = connectionString[2].Split('=', 2)[1];
+        private static string hubAddress = connectionString[0].Split('=', 2)[1];
 
         public static async Task<int> Main(string[] args)
         {
-            var hubAddress = connectionString[0].Split('=')[1];
-            var deviceId = connectionString[1].Split('=')[1];
-            var sharedAccessKey = connectionString[2].Split('=')[1];
-            var hubUser = hubAddress + "/" + deviceId;
-
-            var factory = new MqttFactory();
-            var mqttClient = factory.CreateMqttClient();
-            var password = CreateToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
-
+            var username = hubAddress + "/" + deviceId;
+            var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
-                .WithCredentials(hubUser, password)
+                .WithCredentials(username, password)
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithTls()
                 .Build();
 
+            var factory = new MqttFactory();
+            var mqttClient = factory.CreateMqttClient();
             await mqttClient.ConnectAsync(options, CancellationToken.None);
 
             mqttClient.UseDisconnectedHandler(async e =>
@@ -73,13 +72,13 @@ namespace MessageSample
 
             return 0;
         }
-        private static string CreateToken(string resourceUri, string key)
+
+        private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 3600)
         {
             var sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
-            var week = 60 * 60 * 24 * 7;
-            var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + week);
+            var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + expiryInSeconds);
             var stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
-            var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
+            var hmac = new HMACSHA256(Convert.FromBase64String(key));
             var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
             var sasToken = String.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}", HttpUtility.UrlEncode(resourceUri), HttpUtility.UrlEncode(signature), expiry);
             return sasToken;
