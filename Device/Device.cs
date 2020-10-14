@@ -40,7 +40,7 @@ namespace MessageSample
         public async Task RunSampleAsync()
         {
             await ConnectDevice();
-            await GetEventAsync();
+            await SubscribeToEventAsync();
             await SendEventAsync();
         }
 
@@ -89,7 +89,7 @@ namespace MessageSample
             }
         }
 
-        private async Task GetEventAsync()
+        private async Task SubscribeToEventAsync()
         {
             var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
@@ -109,13 +109,13 @@ namespace MessageSample
             try
             {
                 Console.WriteLine("Trying to reconnect");
-
                 await mqttClient.ConnectAsync(options, CancellationToken.None);
             }
             catch
             {
                 Console.WriteLine("### RECONNECTING FAILED ###");
             }
+            Console.WriteLine("Reconnected");
         }
 
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)
