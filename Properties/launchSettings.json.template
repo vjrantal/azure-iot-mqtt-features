@@ -5,6 +5,7 @@
       "environmentVariables": {
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
         "IotHubConnectionString": "<yourModuleConnectionString>",
+        "FullConnectionString":"<yourModuleConnectionString> including SharedAccessKeyName",
         "DeviceId":"<>"
       }
     }
