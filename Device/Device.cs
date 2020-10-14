@@ -56,7 +56,6 @@ namespace MessageSample
                 .WithTls()
                 .Build();
 
-
             await mqttClient.ConnectAsync(options, CancellationToken.None);
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
@@ -76,10 +75,10 @@ namespace MessageSample
                 Console.WriteLine($"Topic:{topicD2C} Payload:{payload}");
 
                 var message = new MqttApplicationMessageBuilder()
-                   .WithTopic(topicD2C)
-                   .WithPayload(payload)
-                   .WithAtLeastOnceQoS()
-                .Build();
+                    .WithTopic(topicD2C)
+                    .WithPayload(payload)
+                    .WithAtLeastOnceQoS()
+                    .Build();
 
                 Console.WriteLine("PublishAsync start");
                 await mqttClient.PublishAsync(message, CancellationToken.None);
