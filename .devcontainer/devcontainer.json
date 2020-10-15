@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.140.1/containers/dotnetcore
 {
-	"name": "C# Sample",
+	"name": "mqtt dotnet",
 	"build": {
 		"dockerfile": "Dockerfile",
 	},
@@ -9,6 +9,7 @@
 		// Keep command history 
 		"source=ostf-bashhistory,target=/commandhistory,type=volume",
 		// Mount .azure folder for seamless az cli auth
+		// This will crash if .azure folder isn't found on host machine
 		"source=${env:HOME}${env:USERPROFILE}/.azure,target=/root/.azure,type=bind",
 	],
 	// Set *default* container specific settings.json values on container create.

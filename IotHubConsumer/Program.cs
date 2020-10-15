@@ -7,24 +7,16 @@ namespace IotHubConsumer
 {
     class Program
     {
-        static ServiceClient serviceClient;
-        static string connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString");
-        static string targetDevice = Environment.GetEnvironmentVariable("DeviceId");
         static void Main(string[] args)
         {
             Console.WriteLine("Send Cloud-to-Device message\n");
-            serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
-
+            var consumer = new IotHubConsumer();
+            consumer.ConnectConsumer();
             Console.WriteLine("Press any key to send a C2D message.");
             Console.ReadLine();
-            SendCloudToDeviceMessageAsync().Wait();
+            consumer.SendCloudToDeviceMessageAsync("Cloud to device message.").Wait();
             Console.ReadLine();
         }
-        private async static Task SendCloudToDeviceMessageAsync()
-        {
-            var commandMessage = new
-             Message(Encoding.ASCII.GetBytes("Cloud to device message."));
-            await serviceClient.SendAsync(targetDevice, commandMessage);
-        }
+
     }
 }

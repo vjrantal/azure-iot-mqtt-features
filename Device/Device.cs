@@ -41,10 +41,10 @@ namespace MessageSample
         {
             await ConnectDevice();
             await SubscribeToEventAsync();
-            await SendEventAsync();
+            await SendEventsAsync();
         }
 
-        private async Task ConnectDevice()
+        public async Task ConnectDevice()
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -60,10 +60,25 @@ namespace MessageSample
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
-        private async Task SendEventAsync()
+        public async Task SendCloudToDeviceMessageAsync(string payload)
         {
             var topicD2C = $"devices/{deviceId}/messages/events/";
 
+            Console.WriteLine($"Topic:{topicD2C} Payload:{payload}");
+
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topicD2C)
+                .WithPayload(payload)
+                .WithAtLeastOnceQoS()
+                .Build();
+
+            Console.WriteLine("PublishAsync start");
+            await mqttClient.PublishAsync(message, CancellationToken.None);
+            Console.WriteLine("PublishAsync finish");
+        }
+
+        public async Task SendEventsAsync()
+        {
             while (true)
             {
                 var payloadJObject = new JObject();
@@ -72,23 +87,13 @@ namespace MessageSample
                 payloadJObject.Add("OfficeHumidity", (DateTime.UtcNow.Second + 40).ToString());
 
                 string payload = JsonConvert.SerializeObject(payloadJObject);
-                Console.WriteLine($"Topic:{topicD2C} Payload:{payload}");
-
-                var message = new MqttApplicationMessageBuilder()
-                    .WithTopic(topicD2C)
-                    .WithPayload(payload)
-                    .WithAtLeastOnceQoS()
-                    .Build();
-
-                Console.WriteLine("PublishAsync start");
-                await mqttClient.PublishAsync(message, CancellationToken.None);
-                Console.WriteLine("PublishAsync finish");
+                await SendCloudToDeviceMessageAsync(payload);
 
                 Thread.Sleep(30100);
             }
         }
 
-        private async Task SubscribeToEventAsync()
+        public async Task SubscribeToEventAsync()
         {
             var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
