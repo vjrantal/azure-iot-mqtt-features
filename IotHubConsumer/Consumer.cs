@@ -9,8 +9,7 @@ namespace IotHubConsumer
     {
         private ServiceClient serviceClient;
         private static string fullConnectionString = Environment.GetEnvironmentVariable("FullIotHubConnectionString");
-        private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString").Split(';');
-        private string targetDevice = connectionString[1].Split('=', 2)[1];
+        static string targetDevice = Environment.GetEnvironmentVariable("DeviceId");
 
         public async Task SendCloudToDeviceMessageAsync(string message)
         {
