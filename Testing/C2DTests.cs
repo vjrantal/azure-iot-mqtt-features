@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using IotHubConsumer;
 using MessageSample;
@@ -25,17 +26,26 @@ namespace Testing
         {
             // Arrange
             var deviceMock = new Mock<IDevice>();
-
+            var flag = false;
             await device.ConnectDevice();
-            await device.SubscribeToEventAsync();
+            Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            {
+                flag = true;
+                Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
+            };
+            await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
             consumer.ConnectConsumer();
             await consumer.SendCloudToDeviceMessageAsync("test");
-
+            while (!flag)
+            {
+                    
+            }
             // Assert
             //deviceMock.Verify(x => x.ApplicationMessageReceived(It.IsNotNull<MqttApplicationMessageReceivedEventArgs>()), Times.Once);
-            Assert.Pass();
+            Assert.IsTrue(flag);
+            //Assert.Pass();
         }
     }
 }

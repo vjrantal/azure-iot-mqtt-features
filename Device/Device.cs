@@ -30,6 +30,7 @@ namespace MessageSample
         private static string sharedAccessKey = connectionString[2].Split('=', 2)[1];
         private static string hubAddress = connectionString[0].Split('=', 2)[1];
         private readonly IMqttClient mqttClient;
+        public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived;
 
         public Device()
         {
@@ -37,10 +38,10 @@ namespace MessageSample
             this.mqttClient = factory.CreateMqttClient();
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
             await ConnectDevice();
-            await SubscribeToEventAsync();
+            await SubscribeToEventAsync(applicationMessageReceived);
             await SendEventsAsync();
         }
 
@@ -93,18 +94,19 @@ namespace MessageSample
             }
         }
 
-        public async Task SubscribeToEventAsync()
+        public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
+            ApplicationMessageReceived = applicationMessageReceived;
             var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
             mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => ApplicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
-        public void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)
-        {
-            Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
-        }
+        //public void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+        //{
+        //Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
+        //}
 
         private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
         {

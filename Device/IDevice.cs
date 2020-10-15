@@ -8,8 +8,8 @@ namespace MessageSample
     {
         Task ConnectDevice();
         Task SendEventsAsync();
-        Task SubscribeToEventAsync();
+        Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived);
         Task SendCloudToDeviceMessageAsync(string payload);
-        void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e);
+        //void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e);
     }
 }
