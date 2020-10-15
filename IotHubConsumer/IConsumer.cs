@@ -6,5 +6,6 @@ namespace IotHubConsumer
     public interface IConsumer
     {
         Task SendCloudToDeviceMessageAsync(string message);
+        void ConnectConsumer();
     }
 }

@@ -30,6 +30,7 @@ namespace Testing
             await device.SubscribeToEventAsync();
 
             // Act
+            consumer.ConnectConsumer();
             await consumer.SendCloudToDeviceMessageAsync("test");
 
             // Assert
