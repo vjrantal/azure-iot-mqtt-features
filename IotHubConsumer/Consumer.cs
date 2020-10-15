@@ -8,13 +8,13 @@ namespace IotHubConsumer
     public class Consumer : IConsumer
     {
         private ServiceClient serviceClient;
-        private static string fullConnectionString = Environment.GetEnvironmentVariable("FullIotHubConnectionString");
+        private static string IotHubConnectionString = Environment.GetEnvironmentVariable("IotHubConnectionString");
         static string targetDevice = Environment.GetEnvironmentVariable("DeviceId");
 
         public void ConnectConsumer()
         {
             Console.WriteLine("Create connection");
-            serviceClient = ServiceClient.CreateFromConnectionString(fullConnectionString);
+            serviceClient = ServiceClient.CreateFromConnectionString(IotHubConnectionString);
         }
 
         public async Task SendCloudToDeviceMessageAsync(string message)

@@ -25,7 +25,7 @@ namespace MessageSample
         // - pass this value as a command-prompt argument
         // - set the IOTHUB_MODULE_CONN_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubConnectionString").Split(';');
+        private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubDeviceConnectionString").Split(';');
         private static string deviceId = connectionString[1].Split('=', 2)[1];
         private static string sharedAccessKey = connectionString[2].Split('=', 2)[1];
         private static string hubAddress = connectionString[0].Split('=', 2)[1];
