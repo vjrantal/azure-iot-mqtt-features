@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MessageSample
 {
-    public class Device
+    public class Device : IDevice
     {
         // String containing Hostname, Device Id, Module Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
@@ -101,7 +101,7 @@ namespace MessageSample
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
-        private static void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+        public void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)
         {
             Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
         }
