@@ -8,9 +8,17 @@ resource "azurerm_iothub" "mqtt_iot" {
   resource_group_name = azurerm_resource_group.mqtt_iot.name
   location            = azurerm_resource_group.mqtt_iot.location
 
-    # Define the Pricing Tier (SKU & Capacity)
-    sku {
-        name     = "S1"
-        capacity = 1
-    }
+  # Define the Pricing Tier (SKU & Capacity)
+  sku {
+      name     = "S1"
+      capacity = 1
+  }
+
+  route {
+    name           = "defaultroute"
+    source         = "DeviceMessages"
+    condition      = "true"
+    endpoint_names = ["events"]
+    enabled        = true
+  }
 }
