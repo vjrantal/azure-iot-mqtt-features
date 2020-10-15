@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Device\Device.csproj" />
     <ProjectReference Include="..\IotHubConsumer\IotHubConsumer.csproj" />
+    <ProjectReference Include="..\CrossCutting\CrossCutting.csproj" />
   </ItemGroup>
 
 </Project>

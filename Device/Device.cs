@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Configuration;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Disconnecting;
@@ -16,7 +17,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MessageSample
 {
-    public class Device : IDevice
+    public class Device
     {
         // String containing Hostname, Device Id, Module Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
@@ -25,17 +26,23 @@ namespace MessageSample
         // - pass this value as a command-prompt argument
         // - set the IOTHUB_MODULE_CONN_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string[] connectionString = Environment.GetEnvironmentVariable("IotHubDeviceConnectionString").Split(';');
-        private static string deviceId = connectionString[1].Split('=', 2)[1];
-        private static string sharedAccessKey = connectionString[2].Split('=', 2)[1];
-        private static string hubAddress = connectionString[0].Split('=', 2)[1];
+        private readonly IConfiguration configuration;
         private readonly IMqttClient mqttClient;
+
+        private static string deviceId;
+        private static string sharedAccessKey;
+        private static string hubAddress;
+
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived;
 
-        public Device()
+        public Device(IConfiguration configuration)
         {
             var factory = new MqttFactory();
             this.mqttClient = factory.CreateMqttClient();
+            var connectionString = configuration["IotHubDeviceConnectionString"].Split(';');
+            deviceId = connectionString[1].Split('=', 2)[1];
+            sharedAccessKey = connectionString[2].Split('=', 2)[1];
+            hubAddress = connectionString[0].Split('=', 2)[1];
         }
 
         public async Task RunSampleAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)

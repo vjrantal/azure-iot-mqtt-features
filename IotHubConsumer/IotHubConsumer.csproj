@@ -8,4 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.27.1" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CrossCutting\CrossCutting.csproj" />
+  </ItemGroup>
 </Project>

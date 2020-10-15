@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
+using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
-using Moq;
+using Microsoft.Extensions.Configuration;
 using MQTTnet;
+using System.IO;
 using NUnit.Framework;
 
 namespace Testing
@@ -13,19 +15,21 @@ namespace Testing
         private Device device;
         private Consumer consumer;
 
+        private IConfiguration configuration;
+
         [SetUp]
         public void Setup()
         {
-            device = new Device();
-            consumer = new Consumer();
-
+            var dir = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var configuration = Configuration.BuildConfiguration(Path.GetPathRoot(dir));
+            device = new Device(configuration);
+            consumer = new Consumer(configuration);
         }
 
         [Test]
         public async Task SendC2DMessages()
         {
             // Arrange
-            var deviceMock = new Mock<IDevice>();
             var flag = false;
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
@@ -40,10 +44,8 @@ namespace Testing
             await consumer.SendCloudToDeviceMessageAsync("test");
             while (!flag)
             {
-                    
+
             }
-            // Assert
-            //deviceMock.Verify(x => x.ApplicationMessageReceived(It.IsNotNull<MqttApplicationMessageReceivedEventArgs>()), Times.Once);
             Assert.IsTrue(flag);
             //Assert.Pass();
         }
