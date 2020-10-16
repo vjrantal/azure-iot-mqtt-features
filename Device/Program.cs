@@ -12,8 +12,7 @@ namespace MessageSample
     {
         public static async Task<int> Main(string[] args)
         {
-            var dir = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            var configuration = Configuration.BuildConfiguration(Path.GetPathRoot(dir));
+            var configuration = Configuration.BuildConfiguration();
             var device = new Device(configuration);
             await device.RunSampleAsync(ApplicationMessageReceived);
             return 0;

@@ -20,8 +20,7 @@ namespace Testing
         [SetUp]
         public void Setup()
         {
-            var dir = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            var configuration = Configuration.BuildConfiguration(Path.GetPathRoot(dir));
+            var configuration = Configuration.BuildConfiguration();
             device = new Device(configuration);
             consumer = new Consumer(configuration);
         }

@@ -10,7 +10,7 @@ namespace IotHubConsumer
         {
             var dir = System.Reflection.Assembly.GetExecutingAssembly().Location;
 
-            var configuration = Configuration.BuildConfiguration(Path.GetPathRoot(dir));
+            var configuration = Configuration.BuildConfiguration();
 
             Console.WriteLine("Enter message payload for C2D");
             var input = Console.ReadLine();
