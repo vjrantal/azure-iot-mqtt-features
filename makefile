@@ -11,3 +11,12 @@ get-device-conn:
 
 get-iot-hub-conn:
 	az iot hub connection-string show
+
+lint:
+	dotnet format --check
+
+format:
+	dotnet format
+
+build:
+	dotnet build

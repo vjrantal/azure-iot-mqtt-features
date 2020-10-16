@@ -31,6 +31,9 @@ RUN apt-get update \
     && curl -sSL -o /tmp/docker-downloads/tflint.zip https://github.com/wata727/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip \
     && unzip /tmp/docker-downloads/tflint.zip \
     && mv tflint /usr/local/bin \
+    # Install dotnet format
+    && dotnet tool install -g dotnet-format \
+    && echo 'export PATH="$PATH:/root/.dotnet/tools"' >> ~/.bashrc \
     # Clean up downloaded files
     && cd ~ \ 
     && rm -rf /tmp/docker-downloads \
