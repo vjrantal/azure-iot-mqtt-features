@@ -1,0 +1,28 @@
+name: learn-github-actions
+on: [pull_request]
+jobs:
+  check-bats-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build devcontainer
+        run: docker build -f .devcontainer/Dockerfile -t devcontainer .
+
+      - name: Lint
+        run: |
+          docker run \
+          --entrypoint /bin/bash \
+          -v $GITHUB_WORKSPACE:/src \
+          --workdir /src \
+          devcontainer \
+          -c "source ~/.bashrc && make lint"
+
+      - name: Build
+        run: |
+          docker run \
+          --entrypoint /bin/bash \
+          -v $GITHUB_WORKSPACE:/src \
+          --workdir /src \
+          devcontainer \
+          -c "make build"
