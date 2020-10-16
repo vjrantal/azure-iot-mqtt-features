@@ -1,11 +1,11 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
 using Microsoft.Extensions.Configuration;
 using MQTTnet;
-using System.IO;
 using NUnit.Framework;
 
 namespace Testing
