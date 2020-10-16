@@ -16,7 +16,7 @@ jobs:
           -v $GITHUB_WORKSPACE:/src \
           --workdir /src \
           devcontainer \
-          -c make lint
+          -c "make lint"
 
       - name: Build
         run: |
@@ -25,4 +25,4 @@ jobs:
           -v $GITHUB_WORKSPACE:/src \
           --workdir /src \
           devcontainer \
-          -c make build
+          -c "make build"
