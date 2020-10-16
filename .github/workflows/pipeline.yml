@@ -5,4 +5,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: echo "Hello World!"
+
+      - name: Build devcontainer
+        run: docker build -f .devcontainer/Dockerfile -t devcontainer .
+
+      - name: Lint
+        run: |
+          docker run \
+          --entrypoint /bin/bash \
+          -v $GITHUB_WORKSPACE:/src \
+          --workdir /src \
+          devcontainer \
+          -c make lint
+
+      - name: Build
+        run: |
+          docker run \
+          --entrypoint /bin/bash \
+          -v $GITHUB_WORKSPACE:/src \
+          --workdir /src \
+          devcontainer \
+          -c make build
