@@ -1,5 +1,11 @@
 # Azure IoT MQTT features
 
+![build](https://github.com/EliiseS/website/workflows/build/badge.svg)
+
+## Contributing
+
+To get started with contributing, see [docs/contributing](docs/contributing)
+
 ## Test scenarios
 
 ### Client receives all C2D messages without setting clean session
