@@ -34,6 +34,10 @@ RUN apt-get update \
     # Install dotnet format
     && dotnet tool install -g dotnet-format \
     && echo 'export PATH="$PATH:/root/.dotnet/tools"' >> ~/.bashrc \
+    # Install markdown linters
+    && npm install markdown-spellcheck -g \
+    && npm install markdown-link-check -g \
+    && npm install markdownlint-cli -g \
     # Clean up downloaded files
     && cd ~ \ 
     && rm -rf /tmp/docker-downloads \

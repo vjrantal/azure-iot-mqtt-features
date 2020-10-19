@@ -1,4 +1,4 @@
-DEVICE_ID=device0001
+DEVICE_ID?=device0001
 
 create-device:
 	az iot hub device-identity create --device-id $(DEVICE_ID) --hub-name $$(terraform output iothub_name)
@@ -12,7 +12,9 @@ get-device-conn:
 get-iot-hub-conn:
 	az iot hub connection-string show
 
-lint:
+lint: md-lint md-spell-check md-link-check dotnet-lint
+
+dotnet-lint:
 	dotnet format --check
 
 format:
@@ -20,3 +22,15 @@ format:
 
 build:
 	dotnet build
+
+md-link-check:
+	find . -name \*.md -exec markdown-link-check {} \;
+
+md-spell-check:
+	mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md' --report
+
+md-spell-check-interactive:
+	mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md'
+
+md-lint:
+	markdownlint '**/*.md'
