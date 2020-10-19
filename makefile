@@ -27,10 +27,10 @@ md-link-check:
 	find . -name \*.md -exec markdown-link-check {} \;
 
 md-spell-check:
-	 mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md' --report
+	mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md' --report
 
 md-spell-check-interactive:
-	 mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md'
+	mdspell --en-us --ignore-acronyms --ignore-numbers  '**/*.md'
 
 md-lint:
 	markdownlint '**/*.md'
