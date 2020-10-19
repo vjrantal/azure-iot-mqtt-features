@@ -21,7 +21,9 @@
 		"ms-dotnettools.csharp",
 		"ms-azuretools.vscode-docker",
 		"hashicorp.terraform",
-		"ms-vsliveshare.vsliveshare"
+		"ms-vsliveshare.vsliveshare",
+		"yzhang.markdown-all-in-one",
+		"davidanson.vscode-markdownlint"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
