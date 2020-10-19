@@ -1,10 +1,14 @@
 # Azure IoT MQTT features
 
-![build](https://github.com/EliiseS/website/workflows/build/badge.svg)
+![build](https://github.com/vjrantal/azure-iot-mqtt-features/workflows/build/badge.svg)
 
 ## Contributing
 
-To get started with contributing, see [docs/contributing](docs/contributing)
+To get started with contributing, see [docs/contributing](docs/contributing.md)
+
+## MQTT libraries
+
+[Comparison of MQTT libraries](docs/MQTT-libraries.md)
 
 ## Test scenarios
 
@@ -28,7 +32,7 @@ To get started with contributing, see [docs/contributing](docs/contributing)
 
 * Client set Will message in the CONNECT packet and sets Will RETAIN
 * Client use `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8` as the Will topic name
-* Forcefully shutdown client (ctrl+c)
+* Forcefully shutdown client (`ctrl+c`)
 * Verify Will message received
 * Verify the message has the `iothub-MessageType` property with a value of Will assigned to it
 * Check whether `x-opt-retain` application property exists in the message (not documented what is expected)
@@ -43,6 +47,6 @@ To get started with contributing, see [docs/contributing](docs/contributing)
 
 ### Client messages can be routed (optional)
 
-* Setup routing as described in https://stackoverflow.com/questions/51160000/azure-iothub-devicemessage-and-route-filter
+* Setup routing as described in <https://stackoverflow.com/questions/51160000/azure-iothub-devicemessage-and-route-filter>
 * Send D2C to topic `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8`
 * Verify routing is applied
