@@ -26,40 +26,32 @@ namespace MessageSample
         // - pass this value as a command-prompt argument
         // - set the IOTHUB_MODULE_CONN_STRING environment variable
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private readonly IConfiguration configuration;
         private readonly IMqttClient mqttClient;
-
-        private static string deviceId;
         private static string sharedAccessKey;
         private static string hubAddress;
+
+        public string DeviceId { get; set; }
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived;
 
         public Device(IConfiguration configuration)
         {
             var factory = new MqttFactory();
-            this.mqttClient = factory.CreateMqttClient();
+            mqttClient = factory.CreateMqttClient();
             var connectionString = configuration["IotHubDeviceConnectionString"].Split(';');
-            deviceId = connectionString[1].Split('=', 2)[1];
+            DeviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
             hubAddress = connectionString[0].Split('=', 2)[1];
         }
 
-        public async Task RunSampleAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
-        {
-            await ConnectDevice();
-            await SubscribeToEventAsync(applicationMessageReceived);
-            await SendEventsAsync();
-        }
-
         public async Task ConnectDevice()
         {
-            var username = hubAddress + "/" + deviceId;
-            var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
+            var username = hubAddress + "/" + DeviceId;
+            var password = GenerateSasToken(hubAddress + "/devices/" + DeviceId, sharedAccessKey);
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
                 .WithCredentials(username, password)
-                .WithClientId(deviceId)
+                .WithClientId(DeviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithTls()
                 .Build();
@@ -68,52 +60,55 @@ namespace MessageSample
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
-        public async Task SendCloudToDeviceMessageAsync(string payload)
+        public MqttApplicationMessage ConstructMessage(string topic, string payload = "", bool retainFlag = false )
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/";
+            var payloadJObject = new JObject
+                {
+                    { "OfficeTemperature", "22." + DateTime.UtcNow.Millisecond.ToString() },
+                    { "OfficeHumidity", (DateTime.UtcNow.Second + 40).ToString() }
+                };
 
-            Console.WriteLine($"Topic:{topicD2C} Payload:{payload}");
+            payload = JsonConvert.SerializeObject(payloadJObject);
+            Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
             var message = new MqttApplicationMessageBuilder()
-                .WithTopic(topicD2C)
+                .WithTopic(topic)
                 .WithPayload(payload)
+                .WithRetainFlag(retainFlag)
                 .WithAtLeastOnceQoS()
                 .Build();
+
+            return message;
+        }
+
+
+        public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false)
+        {
+            var topicD2C = $"devices/{DeviceId}/messages/events/";
+            var message = ConstructMessage(payload, topicD2C, retainFlag);
 
             Console.WriteLine("PublishAsync start");
             await mqttClient.PublishAsync(message, CancellationToken.None);
             Console.WriteLine("PublishAsync finish");
         }
 
-        public async Task SendEventsAsync()
+        public async Task SendD2CMessagesInALoopAsync()
         {
             while (true)
             {
-                var payloadJObject = new JObject();
-
-                payloadJObject.Add("OfficeTemperature", "22." + DateTime.UtcNow.Millisecond.ToString());
-                payloadJObject.Add("OfficeHumidity", (DateTime.UtcNow.Second + 40).ToString());
-
-                string payload = JsonConvert.SerializeObject(payloadJObject);
-                await SendCloudToDeviceMessageAsync(payload);
-
-                Thread.Sleep(30100);
+                await SendDeviceToCloudMessageAsync();
+                Thread.Sleep(3000);
             }
         }
 
         public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
             ApplicationMessageReceived = applicationMessageReceived;
-            var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
+            var topicC2D = $"devices/{DeviceId}/messages/devicebound/#";
 
             mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => ApplicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
-
-        //public void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)
-        //{
-        //Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
-        //}
 
         private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
         {

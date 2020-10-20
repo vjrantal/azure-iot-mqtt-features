@@ -1,19 +1,23 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Azure.Messaging.EventHubs.Consumer;
 using Microsoft.Azure.Devices;
 using Microsoft.Extensions.Configuration;
 
 namespace IotHubConsumer
 {
-    public class Consumer
+    public class SenderConsumer
     {
         private readonly IConfiguration configuration;
         private ServiceClient serviceClient;
-        public Consumer(IConfiguration configuration)
+
+        public SenderConsumer(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
+
         public void ConnectConsumer()
         {
             Console.WriteLine("Create connection");

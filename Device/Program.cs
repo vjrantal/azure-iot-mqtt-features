@@ -3,8 +3,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using CrossCutting;
 using MQTTnet;
+using CrossCutting;
 
 namespace MessageSample
 {
@@ -14,7 +14,9 @@ namespace MessageSample
         {
             var configuration = Configuration.BuildConfiguration();
             var device = new Device(configuration);
-            await device.RunSampleAsync(ApplicationMessageReceived);
+            await device.ConnectDevice();
+            await device.SubscribeToEventAsync(ApplicationMessageReceived);
+            await device.SendDeviceToCloudMessageAsync();
             return 0;
         }
 
