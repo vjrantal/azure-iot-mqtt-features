@@ -31,7 +31,7 @@ namespace MessageSample
         private static string sharedAccessKey;
         private static string hubAddress;
 
-        public string DeviceId { get; set; }
+        private string deviceId;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived;
 
@@ -40,19 +40,19 @@ namespace MessageSample
             var factory = new MqttFactory();
             mqttClient = factory.CreateMqttClient();
             var connectionString = configuration["IotHubDeviceConnectionString"].Split(';');
-            DeviceId = connectionString[1].Split('=', 2)[1];
+            deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
             hubAddress = connectionString[0].Split('=', 2)[1];
         }
 
         public async Task ConnectDevice()
         {
-            var username = hubAddress + "/" + DeviceId;
-            var password = GenerateSasToken(hubAddress + "/devices/" + DeviceId, sharedAccessKey);
+            var username = hubAddress + "/" + deviceId;
+            var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
                 .WithCredentials(username, password)
-                .WithClientId(DeviceId)
+                .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithTls()
                 .Build();
@@ -85,7 +85,7 @@ namespace MessageSample
 
         public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
-            var topicD2C = $"devices/{DeviceId}/messages/events/";
+            var topicD2C = $"devices/{deviceId}/messages/events/";
             var message = ConstructMessage(payload, topicD2C, retainFlag);
 
             Console.WriteLine("PublishAsync start");
@@ -105,7 +105,7 @@ namespace MessageSample
         public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
             ApplicationMessageReceived = applicationMessageReceived;
-            var topicC2D = $"devices/{DeviceId}/messages/devicebound/#";
+            var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
             mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => ApplicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
