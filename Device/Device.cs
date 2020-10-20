@@ -12,6 +12,7 @@ using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
+using MQTTnet.Protocol;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -60,7 +61,7 @@ namespace MessageSample
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload = "", bool retainFlag = false )
+        public MqttApplicationMessage ConstructMessage(string topic, string payload = "", bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
             var payloadJObject = new JObject
                 {
@@ -75,14 +76,14 @@ namespace MessageSample
                 .WithTopic(topic)
                 .WithPayload(payload)
                 .WithRetainFlag(retainFlag)
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(mqttQoSLevel)
                 .Build();
 
             return message;
         }
 
 
-        public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false)
+        public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
             var topicD2C = $"devices/{DeviceId}/messages/events/";
             var message = ConstructMessage(payload, topicD2C, retainFlag);
