@@ -85,7 +85,7 @@ namespace MessageSample
         public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false)
         {
             var topicD2C = $"devices/{deviceId}/messages/events/";
-            var message = ConstructMessage(payload, topicD2C, retainFlag);
+            var message = ConstructMessage(topicD2C, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
             await mqttClient.PublishAsync(message, CancellationToken.None);
