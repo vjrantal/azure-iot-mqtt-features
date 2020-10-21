@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace IotHubConsumer
     public class ReceiverConsumer
     {
         private readonly IConfiguration configuration;
+        public HashSet<TestElement> MessagesWithRetainSet { get; set; } = new HashSet<TestElement>();
 
         public ReceiverConsumer(IConfiguration configuration)
         {
@@ -21,7 +23,7 @@ namespace IotHubConsumer
         public async Task ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
             var connectionString = configuration["EventHubCompatibleEndpoint"];
-            var eventHubName = configuration["EventHubCompatibleEndpoint"];
+            var eventHubName = configuration["EventHubName"];
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
             Console.WriteLine("Listening for messages on all partitions");
@@ -40,13 +42,19 @@ namespace IotHubConsumer
                 //   https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
                 
 
-                var data = "";
                 await foreach (var partitionEvent in consumer.ReadEventsAsync(cancellationToken))
                 {
                     Console.WriteLine("Message received on partition {0}:", partitionEvent.Partition.PartitionId);
 
-                    data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
+                    var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
+
+                    if(partitionEvent.Data.Properties.ContainsKey("mqtt-retain")) //TODO: can remove this if and add all messages for other unit tests
+                    {
+                        MessagesWithRetainSet.Add(new TestElement { Payload = data, RetainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString()});
+                    }
+
                     Console.WriteLine("\t{0}:", data);
+                    
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)
@@ -69,4 +77,11 @@ namespace IotHubConsumer
             }
         }
     }
+
+    public class TestElement
+    {
+        public string Payload { get; set; }
+        public string RetainFlag { get; set; }
+    }
+
 }

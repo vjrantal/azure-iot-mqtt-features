@@ -16,7 +16,7 @@ namespace MessageSample
             var device = new Device(configuration);
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
-            await device.SendDeviceToCloudMessageAsync();
+            await device.SendDeviceToCloudMessageAsync("xxxx"); // TODO: remove if no longer used
             return 0;
         }
 
