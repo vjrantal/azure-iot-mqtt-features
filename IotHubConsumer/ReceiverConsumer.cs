@@ -21,7 +21,7 @@ namespace IotHubConsumer
         public async Task ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
             var connectionString = configuration["EventHubCompatibleEndpoint"];
-            var eventHubName = configuration["EventHubCompatibleEndpoint"];
+            var eventHubName = configuration["EventHubName"];
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
             Console.WriteLine("Listening for messages on all partitions");
@@ -40,12 +40,11 @@ namespace IotHubConsumer
                 //   https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
                 
 
-                var data = "";
                 await foreach (var partitionEvent in consumer.ReadEventsAsync(cancellationToken))
                 {
                     Console.WriteLine("Message received on partition {0}:", partitionEvent.Partition.PartitionId);
 
-                    data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
+                    var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
                     Console.WriteLine("\t{0}:", data);
 
                     Console.WriteLine("Application properties (set by device):");
