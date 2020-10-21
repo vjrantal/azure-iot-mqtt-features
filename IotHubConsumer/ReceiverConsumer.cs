@@ -40,7 +40,7 @@ namespace IotHubConsumer
                 //
                 // More information on the "EventProcessorClient" and its benefits can be found here:
                 //   https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
-                
+
 
                 await foreach (var partitionEvent in consumer.ReadEventsAsync(cancellationToken))
                 {
@@ -48,13 +48,13 @@ namespace IotHubConsumer
 
                     var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
 
-                    if(partitionEvent.Data.Properties.ContainsKey("mqtt-retain")) //TODO: can remove this if and add all messages for other unit tests
+                    if (partitionEvent.Data.Properties.ContainsKey("mqtt-retain")) //TODO: can remove this if and add all messages for other unit tests
                     {
-                        MessagesWithRetainSet.Add(new TestElement { Payload = data, RetainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString()});
+                        MessagesWithRetainSet.Add(new TestElement { Payload = data, RetainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString() });
                     }
 
                     Console.WriteLine("\t{0}:", data);
-                    
+
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)

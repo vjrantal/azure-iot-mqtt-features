@@ -60,7 +60,7 @@ namespace MessageSample
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false )
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)
         {
             /*var payloadJObject = new JObject
                 {
