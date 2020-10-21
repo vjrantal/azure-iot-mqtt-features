@@ -13,7 +13,7 @@ namespace IotHubConsumer
             var configuration = Configuration.BuildConfiguration();
 
             //Console.WriteLine("Enter message payload for C2D");
-           // var input = Console.ReadLine();
+            // var input = Console.ReadLine();
             var consumer = new SenderConsumer(configuration);
             //consumer.SendCloudToDeviceMessageAsync(input).Wait();
 

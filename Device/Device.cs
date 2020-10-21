@@ -60,15 +60,14 @@ namespace MessageSample
             mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload = "", bool retainFlag = false )
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false )
         {
-            var payloadJObject = new JObject
+            /*var payloadJObject = new JObject
                 {
-                    { "OfficeTemperature", "22." + DateTime.UtcNow.Millisecond.ToString() },
-                    { "OfficeHumidity", (DateTime.UtcNow.Second + 40).ToString() }
+                    { "OfficeTemperature", payload + DateTime.UtcNow.Millisecond.ToString() }
                 };
 
-            payload = JsonConvert.SerializeObject(payloadJObject);
+            payload = JsonConvert.SerializeObject(payloadJObject);*/
             Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
             var message = new MqttApplicationMessageBuilder()
@@ -82,9 +81,9 @@ namespace MessageSample
         }
 
 
-        public async Task SendDeviceToCloudMessageAsync(string payload = "", bool retainFlag = false)
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/";
+            var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
@@ -92,11 +91,12 @@ namespace MessageSample
             Console.WriteLine("PublishAsync finish");
         }
 
-        public async Task SendD2CMessagesInALoopAsync()
+        public async Task SendD2CMessagesInALoopAsync() // TODO: delete if no longer used
         {
+            var payload = 0;
             while (true)
             {
-                await SendDeviceToCloudMessageAsync();
+                await SendDeviceToCloudMessageAsync((payload++).ToString());
                 Thread.Sleep(3000);
             }
         }

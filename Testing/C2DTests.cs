@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting;
@@ -56,12 +57,7 @@ namespace Testing
             await device.ConnectDevice();
 
             var retainFlag = true;
-            var payloadJObject = new JObject
-            {
-                { "OfficeTemperature", "22." + DateTime.UtcNow.Millisecond.ToString() },
-                { "OfficeHumidity", (DateTime.UtcNow.Second + 40).ToString() }
-            };
-            var payload = JsonConvert.SerializeObject(payloadJObject);
+            var payload = Guid.NewGuid().ToString();
 
             // Act
             // send D2C with retain flag set to true
@@ -69,21 +65,13 @@ namespace Testing
 
             using var cancellationSource = new CancellationTokenSource();
 
-            void cancelKeyPressHandler(object sender, ConsoleCancelEventArgs eventArgs)
-            {
-                eventArgs.Cancel = true;
-                cancellationSource.Cancel();
-                Console.WriteLine("Exiting...");
-
-                Console.CancelKeyPress -= cancelKeyPressHandler;
-            }
-
-            Console.CancelKeyPress += cancelKeyPressHandler;
-
-            // Assert - verify received
+            // Assert - verify received + mqtt-retain set to true
+            cancellationSource.CancelAfter(3000);
             var recConsumer = new ReceiverConsumer(configuration);
             recConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token).Wait();
-            Assert.Pass();
+
+            var sentMessage = recConsumer.MessagesWithRetainSet.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true"); // TODO: check if we can remove the retain flag assertion
         }
     }
 }
