@@ -25,10 +25,11 @@ namespace Testing
             var deviceId = configuration["DeviceId"];
             var eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
             var eventHubName = configuration["EventHubName"];
+            var iotHubSasKey = configuration["IotHubSasKey"];
 
             device = new Device(iotHubDeviceConnectionString);
             senderConsumer = new Sender(iotHubConnectionString, deviceId);
-            receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName);
+            receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
         }
 
         [Test]

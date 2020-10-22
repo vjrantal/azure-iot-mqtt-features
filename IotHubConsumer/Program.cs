@@ -32,7 +32,9 @@ namespace IotHubConsumer
 
             var eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
             var eventHubName = configuration["EventHubName"];
-            var recConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName);
+            var iotHubSasKey = configuration["IotHubSasKey"];
+
+            var recConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
 
             var cancellationSource = new CancellationTokenSource();
             void cancelKeyPressHandler(object sender, ConsoleCancelEventArgs eventArgs)

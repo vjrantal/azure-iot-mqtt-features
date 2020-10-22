@@ -9,20 +9,24 @@ namespace IotHubConsumer
 {
     public class Receiver
     {
+        public HashSet<D2CMessage> ReceivedMessages { get; set; } = new HashSet<D2CMessage>();
+        private const string IotHubSasKeyName = "service";
         private readonly string eventHubCompatibleEndpoint;
         private readonly string eventHubName;
 
-        public HashSet<D2CMessage> ReceivedMessages { get; set; } = new HashSet<D2CMessage>();
+        private readonly string iotHubSasKey;
 
-        public Receiver(string eventHubCompatibleEndpoint, string eventHubName)
+        public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey)
         {
             this.eventHubCompatibleEndpoint = eventHubCompatibleEndpoint;
+            this.iotHubSasKey = iotHubSasKey;
             this.eventHubName = eventHubName;
         }
 
         public async Task ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
-            await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, eventHubCompatibleEndpoint, eventHubName);
+            string connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, IotHubSasKeyName, iotHubSasKey);
+            await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
             Console.WriteLine("Listening for messages on all partitions");
 
@@ -63,5 +67,9 @@ namespace IotHubConsumer
                 // error in this scenario.
             }
         }
+        private static string BuildEventHubsConnectionString(string eventHubsEndpoint,
+                                                     string iotHubSharedKeyName,
+                                                     string iotHubSharedKey) =>
+        $"Endpoint={ eventHubsEndpoint };SharedAccessKeyName={ iotHubSharedKeyName };SharedAccessKey={ iotHubSharedKey }";
     }
 }
