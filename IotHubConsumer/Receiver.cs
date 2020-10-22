@@ -28,18 +28,6 @@ namespace IotHubConsumer
 
             try
             {
-                // Begin reading events for all partitions, starting with the first event in each partition and waiting indefinitely for
-                // events to become available.  Reading can be canceled by breaking out of the loop when an event is processed or by
-                // signaling the cancellation token.
-                //
-                // The "ReadEventsAsync" method on the consumer is a good starting point for consuming events for prototypes
-                // and samples.  For real-world production scenarios, it is strongly recommended that you consider using the
-                // "EventProcessorClient" from the "Azure.Messaging.EventHubs.Processor" package.
-                //
-                // More information on the "EventProcessorClient" and its benefits can be found here:
-                //   https://github.com/Azure/azure-sdk-for-net/blob/master/sdk/eventhub/Azure.Messaging.EventHubs.Processor/README.md
-
-
                 await foreach (var partitionEvent in consumer.ReadEventsAsync(cancellationToken))
                 {
                     Console.WriteLine("Message received on partition {0}:", partitionEvent.Partition.PartitionId);
@@ -75,11 +63,5 @@ namespace IotHubConsumer
                 // error in this scenario.
             }
         }
-    }
-
-    public class D2CMessage
-    {
-        public string Payload { get; set; }
-        public string RetainFlag { get; set; }
     }
 }

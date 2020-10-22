@@ -101,7 +101,7 @@ namespace MessageSample
             Console.WriteLine("Reconnected");
         }
 
-        private string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)
+        private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)
         {
             var sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
             var expiry = Convert.ToString((int)sinceEpoch.TotalSeconds + expiryInSeconds);
