@@ -12,6 +12,15 @@ get-device-conn:
 get-iot-hub-conn:
 	az iot hub connection-string show
 
+get-iot-hub-sas-key:
+	az iot hub policy show --name service --query primaryKey --hub-name $$(terraform output iothub_name)
+
+get-event-hub-endpoint:
+	az iot hub show --query properties.eventHubEndpoints.events.endpoint --name $$(terraform output iothub_name)
+
+get-event-hub-name:
+	az iot hub show --query properties.eventHubEndpoints.events.path --name $$(terraform output iothub_name)
+
 lint: md-lint md-spell-check md-link-check dotnet-lint
 
 dotnet-lint:
