@@ -3,8 +3,8 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using MQTTnet;
 using CrossCutting;
+using MQTTnet;
 
 namespace MessageSample
 {

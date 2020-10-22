@@ -44,7 +44,7 @@ namespace Testing
             // Act
             consumer.ConnectConsumer();
             await consumer.SendCloudToDeviceMessageAsync("test");
-            while (!flag) {}
+            while (!flag) { }
 
             // Assert
             Assert.IsTrue(flag);
