@@ -6,6 +6,7 @@ using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
 using MQTTnet;
+using MQTTnet.Protocol;
 using NUnit.Framework;
 
 namespace Testing
@@ -72,6 +73,25 @@ namespace Testing
             // Assert - verify message was received + mqtt-retain set to true
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
             Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true");
+        }
+
+        [Test]
+        public async Task ReceiveD2CMessageWithQosZero()
+        {
+            // Arrange
+            await device.ConnectDevice();
+            var payload = Guid.NewGuid().ToString();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, false, MqttQualityOfServiceLevel.AtMostOnce);
+
+            var cancellationSource = new CancellationTokenSource();
+            cancellationSource.CancelAfter(3000);
+            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+
+            // Assert - verify message was received + mqtt-retain set to true
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null);
         }
     }
 }
