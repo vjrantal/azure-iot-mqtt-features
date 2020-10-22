@@ -1,7 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using CrossCutting;
 using MQTTnet;
@@ -10,14 +7,18 @@ namespace MessageSample
 {
     public class Program
     {
-        public static async Task<int> Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var configuration = Configuration.BuildConfiguration();
-            var device = new Device(configuration);
+            var iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            var device = new Device(iotHubDeviceConnectionString);
+
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
-            await device.SendDeviceToCloudMessageAsync("xxxx"); // TODO: remove if no longer used
-            return 0;
+
+            Console.WriteLine("Enter message payload for D2C");
+            var input = Console.ReadLine();
+            await device.SendDeviceToCloudMessageAsync(input);
         }
 
         public static void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)

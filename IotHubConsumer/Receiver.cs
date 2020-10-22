@@ -4,27 +4,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs.Consumer;
-using Microsoft.Extensions.Configuration;
 
 namespace IotHubConsumer
 {
-    public class ReceiverConsumer
+    public class Receiver
     {
-        private readonly IConfiguration configuration;
-        public HashSet<TestElement> MessagesWithRetainSet { get; set; } = new HashSet<TestElement>();
+        private readonly string eventHubCompatibleEndpoint;
+        private readonly string eventHubName;
 
-        public ReceiverConsumer(IConfiguration configuration)
+        public HashSet<D2CMessage> ReceivedMessages { get; set; } = new HashSet<D2CMessage>();
+
+        public Receiver(string eventHubCompatibleEndpoint, string eventHubName)
         {
-            this.configuration = configuration;
+            this.eventHubCompatibleEndpoint = eventHubCompatibleEndpoint;
+            this.eventHubName = eventHubName;
         }
 
-        // Asynchronously create a PartitionReceiver for a partition and then start
-        // reading any messages sent from the simulated client.
         public async Task ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
-            var connectionString = configuration["EventHubCompatibleEndpoint"];
-            var eventHubName = configuration["EventHubName"];
-            await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
+            await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, eventHubCompatibleEndpoint, eventHubName);
 
             Console.WriteLine("Listening for messages on all partitions");
 
@@ -47,14 +45,15 @@ namespace IotHubConsumer
                     Console.WriteLine("Message received on partition {0}:", partitionEvent.Partition.PartitionId);
 
                     var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
-
-                    if (partitionEvent.Data.Properties.ContainsKey("mqtt-retain")) //TODO: can remove this if and add all messages for other unit tests
-                    {
-                        MessagesWithRetainSet.Add(new TestElement { Payload = data, RetainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString() });
-                    }
-
                     Console.WriteLine("\t{0}:", data);
 
+                    var retainFlag = "false";
+                    if (partitionEvent.Data.Properties.ContainsKey("mqtt-retain"))
+                    {
+                        retainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString();
+                    }
+
+                    ReceivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag });
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)
@@ -78,10 +77,9 @@ namespace IotHubConsumer
         }
     }
 
-    public class TestElement
+    public class D2CMessage
     {
         public string Payload { get; set; }
         public string RetainFlag { get; set; }
     }
-
 }
