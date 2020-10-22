@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.Extensions.Configuration;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Disconnecting;
@@ -13,36 +12,27 @@ using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace MessageSample
 {
     public class Device
     {
-        // String containing Hostname, Device Id, Module Id & Device Key in one of the following formats:
-        //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
-        //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
-        // For this sample either
-        // - pass this value as a command-prompt argument
-        // - set the IOTHUB_MODULE_CONN_STRING environment variable
-        // - create a launchSettings.json (see launchSettings.json.template) containing the variable
         private readonly IMqttClient mqttClient;
-        private static string sharedAccessKey;
-        private static string hubAddress;
+        private readonly string sharedAccessKey;
+        private readonly string hubAddress;
+        private readonly string deviceId;
 
-        private string deviceId;
+        public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
-        public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived;
-
-        public Device(IConfiguration configuration)
+        public Device(string iotHubDeviceConnectionString)
         {
             var factory = new MqttFactory();
             mqttClient = factory.CreateMqttClient();
-            var connectionString = configuration["IotHubDeviceConnectionString"].Split(';');
+
+            var connectionString = iotHubDeviceConnectionString.Split(';');
+            hubAddress = connectionString[0].Split('=', 2)[1];
             deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
-            hubAddress = connectionString[0].Split('=', 2)[1];
         }
 
         public async Task ConnectDevice()
@@ -86,16 +76,6 @@ namespace MessageSample
             Console.WriteLine("PublishAsync finish");
         }
 
-        public async Task SendD2CMessagesInALoopAsync() // TODO: delete if no longer used
-        {
-            var payload = 0;
-            while (true)
-            {
-                await SendDeviceToCloudMessageAsync((payload++).ToString());
-                Thread.Sleep(3000);
-            }
-        }
-
         public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
             ApplicationMessageReceived = applicationMessageReceived;
@@ -118,6 +98,7 @@ namespace MessageSample
             {
                 Console.WriteLine("### RECONNECTING FAILED ###");
             }
+
             Console.WriteLine("Reconnected");
         }
 
@@ -128,7 +109,7 @@ namespace MessageSample
             var stringToSign = HttpUtility.UrlEncode(resourceUri) + "\n" + expiry;
             var hmac = new HMACSHA256(Convert.FromBase64String(key));
             var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(stringToSign)));
-            var sasToken = String.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}", HttpUtility.UrlEncode(resourceUri), HttpUtility.UrlEncode(signature), expiry);
+            var sasToken = string.Format(CultureInfo.InvariantCulture, "SharedAccessSignature sr={0}&sig={1}&se={2}", HttpUtility.UrlEncode(resourceUri), HttpUtility.UrlEncode(signature), expiry);
             return sasToken;
         }
     }

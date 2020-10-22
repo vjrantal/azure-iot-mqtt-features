@@ -4,5 +4,6 @@
   "IotHubConnectionString": "<yourIothubConnectionString>",
   "DeviceId":"",
   "EventHubName": "",
-  "EventHubCompatibleEndpoint": ""
+  "EventHubCompatibleEndpoint": "",
+  "IotHubSasKey": ""
 }

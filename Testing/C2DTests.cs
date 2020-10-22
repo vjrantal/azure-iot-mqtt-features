@@ -1,15 +1,11 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
-using Microsoft.Extensions.Configuration;
 using MQTTnet;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
 namespace Testing
@@ -17,15 +13,23 @@ namespace Testing
     public class C2DTests
     {
         private Device device;
-        private SenderConsumer consumer;
-        private IConfiguration configuration;
+        private Sender senderConsumer;
+        private Receiver receiverConsumer;
 
         [SetUp]
         public void Setup()
         {
-            configuration = Configuration.BuildConfiguration();
-            device = new Device(configuration);
-            consumer = new SenderConsumer(configuration);
+            var configuration = Configuration.BuildConfiguration();
+            var iotHubConnectionString = configuration["IotHubConnectionString"];
+            var iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            var deviceId = configuration["DeviceId"];
+            var eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
+            var eventHubName = configuration["EventHubName"];
+            var iotHubSasKey = configuration["IotHubSasKey"];
+
+            device = new Device(iotHubDeviceConnectionString);
+            senderConsumer = new Sender(iotHubConnectionString, deviceId);
+            receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
         }
 
         [Test]
@@ -42,8 +46,7 @@ namespace Testing
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
-            consumer.ConnectConsumer();
-            await consumer.SendCloudToDeviceMessageAsync("test");
+            await senderConsumer.SendCloudToDeviceMessageAsync("test");
             while (!flag) { }
 
             // Assert
@@ -60,18 +63,15 @@ namespace Testing
             var payload = Guid.NewGuid().ToString();
 
             // Act
-            // send D2C with retain flag set to true
             await device.SendDeviceToCloudMessageAsync(payload, retainFlag);
 
-            using var cancellationSource = new CancellationTokenSource();
-
-            // Assert - verify received + mqtt-retain set to true
+            var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            var recConsumer = new ReceiverConsumer(configuration);
-            recConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token).Wait();
+            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
-            var sentMessage = recConsumer.MessagesWithRetainSet.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true"); // TODO: check if we can remove the retain flag assertion
+            // Assert - verify message was received + mqtt-retain set to true
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true");
         }
     }
 }
