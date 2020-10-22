@@ -9,7 +9,6 @@ namespace IotHubConsumer
 {
     public class Receiver
     {
-        public HashSet<D2CMessage> ReceivedMessages { get; set; } = new HashSet<D2CMessage>();
         private const string IotHubSasKeyName = "service";
         private readonly string eventHubCompatibleEndpoint;
         private readonly string eventHubName;
@@ -23,10 +22,12 @@ namespace IotHubConsumer
             this.eventHubName = eventHubName;
         }
 
-        public async Task ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
+        public async Task<HashSet<D2CMessage>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
             string connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, IotHubSasKeyName, iotHubSasKey);
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
+
+            var receivedMessages = new HashSet<D2CMessage>();
 
             Console.WriteLine("Listening for messages on all partitions");
 
@@ -45,7 +46,7 @@ namespace IotHubConsumer
                         retainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString();
                     }
 
-                    ReceivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag });
+                    receivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag });
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)
@@ -66,6 +67,8 @@ namespace IotHubConsumer
                 // This is expected when the token is signaled; it should not be considered an
                 // error in this scenario.
             }
+
+            return receivedMessages;
         }
         private static string BuildEventHubsConnectionString(string eventHubsEndpoint,
                                                      string iotHubSharedKeyName,

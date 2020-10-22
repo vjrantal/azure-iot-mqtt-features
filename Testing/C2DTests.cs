@@ -67,10 +67,10 @@ namespace Testing
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token).Wait();
+            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert - verify message was received + mqtt-retain set to true
-            var sentMessage = receiverConsumer.ReceivedMessages.FirstOrDefault(x => x.Payload == payload);
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
             Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true");
         }
     }
