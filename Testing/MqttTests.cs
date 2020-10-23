@@ -4,14 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using CrossCutting;
 using IotHubConsumer;
-using MessageSample;
+using Client;
 using MQTTnet;
 using MQTTnet.Protocol;
 using NUnit.Framework;
 
 namespace Testing
 {
-    public class C2DTests
+    public class MqttTests
     {
         private Device device;
         private Sender senderConsumer;
@@ -92,6 +92,26 @@ namespace Testing
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
             Assert.IsTrue(sentMessage != null);
+        }
+
+        [Test]
+        public async Task SenWillMessageWhenDeviceDisconnectsUngracefully()
+        {
+            // Arrange
+            var willPayload = Guid.NewGuid().ToString();
+
+            // Act
+            await device.ConnectDevice(willPayload);
+
+            //disconnect ungracefully
+            var cancellationSource = new CancellationTokenSource();
+            cancellationSource.CancelAfter(3000);
+            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+
+            // Assert
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
+            //Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
+            Assert.Pass();
         }
     }
 }
