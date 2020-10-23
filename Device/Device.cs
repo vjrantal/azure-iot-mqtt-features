@@ -36,7 +36,7 @@ namespace Client
         }
 
         public async Task ConnectDevice(string willPayload = "")
-        { 
+        {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
             var options = new MqttClientOptionsBuilder()
