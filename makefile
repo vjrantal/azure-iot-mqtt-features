@@ -32,6 +32,9 @@ format:
 build:
 	dotnet build
 
+test: 
+	dotnet test
+
 md-link-check:
 	find . -name \*.md -exec markdown-link-check {} \;
 

@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace Testing
 {
-    public class C2DTests
+    public class MqttTests
     {
         private Device device;
         private Sender senderConsumer;
