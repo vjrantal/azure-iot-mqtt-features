@@ -34,7 +34,7 @@ namespace MessageSample
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
         }
 
-        public async Task ConnectDevice()
+        public async Task ConnectDevice(bool cleanSession = true)
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -43,11 +43,23 @@ namespace MessageSample
                 .WithCredentials(username, password)
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithCleanSession(cleanSession)
                 .WithTls()
                 .Build();
+            try
+            {
+                await mqttClient.ConnectAsync(options, CancellationToken.None);
+            }
+            catch (TaskCanceledException)
+            {
+                // This is expected when the token is signaled; it should not be considered an
+                // error in this scenario.
+            }
+        }
 
-            await mqttClient.ConnectAsync(options, CancellationToken.None);
-            mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
+        public async Task DisconnectDevice()
+        {
+            await mqttClient.DisconnectAsync();
         }
 
         public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)

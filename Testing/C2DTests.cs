@@ -12,51 +12,58 @@ namespace Testing
 {
     public class C2DTests
     {
-        private Device device;
-        private Sender senderConsumer;
-        private Receiver receiverConsumer;
+        private string iotHubConnectionString;
+        private string iotHubDeviceConnectionString;
+        private string deviceId;
+        private string eventHubCompatibleEndpoint;
+        private string eventHubName;
+        private string iotHubSasKey;
+
 
         [SetUp]
         public void Setup()
         {
             var configuration = Configuration.BuildConfiguration();
-            var iotHubConnectionString = configuration["IotHubConnectionString"];
-            var iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
-            var deviceId = configuration["DeviceId"];
-            var eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
-            var eventHubName = configuration["EventHubName"];
-            var iotHubSasKey = configuration["IotHubSasKey"];
-
-            device = new Device(iotHubDeviceConnectionString);
-            senderConsumer = new Sender(iotHubConnectionString, deviceId);
-            receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            iotHubConnectionString = configuration["IotHubConnectionString"];
+            iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            deviceId = configuration["DeviceId"];
+            eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
+            eventHubName = configuration["EventHubName"];
+            iotHubSasKey = configuration["IotHubSasKey"];
         }
 
         [Test]
         public async Task SendC2DMessages()
         {
             // Arrange
-            var flag = false;
+            var device = new Device(iotHubDeviceConnectionString);
+            var sender = new Sender(iotHubConnectionString, deviceId);
+
+            var payload = Guid.NewGuid().ToString();
+            var receivedPayload = string.Empty;
+
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
-                flag = true;
-                Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
+                receivedPayload = e.ApplicationMessage.ConvertPayloadToString();
+
             };
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
-            await senderConsumer.SendCloudToDeviceMessageAsync("test");
-            while (!flag) { }
+            await sender.SendCloudToDeviceMessageAsync(payload);
 
             // Assert
-            Assert.IsTrue(flag);
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == receivedPayload, TimeSpan.FromSeconds(10)));
         }
 
         [Test]
         public async Task SendD2CWithRetainFlagTrue()
         {
             // Arrange
+            var receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceConnectionString);
+
             await device.ConnectDevice();
 
             var retainFlag = true;
@@ -73,5 +80,52 @@ namespace Testing
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
             Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true");
         }
+
+        [Test]
+        public async Task ReceiveAllC2DMessagesWithCleanSessionFalse()
+        {
+            // Arrange
+            var device = new Device(iotHubDeviceConnectionString);
+            var sender = new Sender(iotHubConnectionString, deviceId);
+            var firstPayload = Guid.NewGuid().ToString();
+            var secondPayload = Guid.NewGuid().ToString();
+
+            var payload = string.Empty;
+            await device.ConnectDevice();
+            Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            {
+                payload = e.ApplicationMessage.ConvertPayloadToString();
+            };
+            await device.SubscribeToEventAsync(ApplicationMessageReceived);
+
+            // Act
+            await sender.SendCloudToDeviceMessageAsync(firstPayload);
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == firstPayload, TimeSpan.FromSeconds(10)));
+
+            await device.DisconnectDevice();
+            Thread.Sleep(15000);
+            await sender.SendCloudToDeviceMessageAsync(secondPayload);
+
+            device = new Device(iotHubDeviceConnectionString);
+            await device.ConnectDevice(false);
+            await device.SubscribeToEventAsync(ApplicationMessageReceived);
+            // await sender.SendCloudToDeviceMessageAsync(secondPayload);
+
+            // Assert
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == secondPayload, TimeSpan.FromSeconds(10)));
+        }
+        private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
+        {
+            var success = false;
+            var elapsed = 0;
+            while ((!success) && (elapsed < timeSpan.TotalMilliseconds))
+            {
+                Thread.Sleep(100);
+                elapsed += 100;
+                success = task();
+            }
+            return success;
+        }
+
     }
 }
