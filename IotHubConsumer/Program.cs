@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using CrossCutting;
 using Microsoft.Extensions.Configuration;
 
@@ -8,14 +9,14 @@ namespace IotHubConsumer
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var configuration = Configuration.BuildConfiguration();
-            SendCloudToDeviceMessage(configuration);
-            ReceiveMessagesFromDevice(configuration);
+            await SendCloudToDeviceMessage(configuration);
+            await ReceiveMessagesFromDevice(configuration);
         }
 
-        public static void SendCloudToDeviceMessage(IConfiguration configuration)
+        public static async Task SendCloudToDeviceMessage(IConfiguration configuration)
         {
             Console.WriteLine("Enter message payload for C2D");
             var input = Console.ReadLine();
@@ -23,10 +24,10 @@ namespace IotHubConsumer
             var iotHubConnectionString = configuration["IotHubConnectionString"];
             var deviceId = configuration["DeviceId"];
             var consumer = new Sender(iotHubConnectionString, deviceId);
-            consumer.SendCloudToDeviceMessageAsync(input).Wait();
+            await consumer.SendCloudToDeviceMessageAsync(input);
         }
 
-        public static void ReceiveMessagesFromDevice(IConfiguration configuration)
+        public static async Task ReceiveMessagesFromDevice(IConfiguration configuration)
         {
             Console.WriteLine("Start to read device to cloud messages. Ctrl-C to exit.\n");
 
@@ -47,7 +48,7 @@ namespace IotHubConsumer
             }
             Console.CancelKeyPress += cancelKeyPressHandler;
 
-            recConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token).Wait();
+            await recConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
         }
     }
 }

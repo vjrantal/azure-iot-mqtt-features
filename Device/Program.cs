@@ -16,9 +16,16 @@ namespace MessageSample
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
-            Console.WriteLine("Enter message payload for D2C");
-            var input = Console.ReadLine();
-            await device.SendDeviceToCloudMessageAsync(input);
+            string input;
+            do
+            {
+                Console.WriteLine("Enter message payload for D2C");
+                input = Console.ReadLine();
+                if (input != null)
+                {
+                    await device.SendDeviceToCloudMessageAsync(input);
+                }
+            } while (input != null);
         }
 
         public static void ApplicationMessageReceived(MqttApplicationMessageReceivedEventArgs e)

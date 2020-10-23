@@ -9,10 +9,9 @@ namespace IotHubConsumer
 {
     public class Receiver
     {
-        private const string IotHubSasKeyName = "service";
+        private const string iotHubSasKeyName = "service";
         private readonly string eventHubCompatibleEndpoint;
         private readonly string eventHubName;
-
         private readonly string iotHubSasKey;
 
         public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey)
@@ -24,7 +23,7 @@ namespace IotHubConsumer
 
         public async Task<HashSet<D2CMessage>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
-            string connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, IotHubSasKeyName, iotHubSasKey);
+            var connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, iotHubSasKeyName, iotHubSasKey);
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
             var receivedMessages = new HashSet<D2CMessage>();
@@ -70,9 +69,10 @@ namespace IotHubConsumer
 
             return receivedMessages;
         }
-        private static string BuildEventHubsConnectionString(string eventHubsEndpoint,
-                                                     string iotHubSharedKeyName,
-                                                     string iotHubSharedKey) =>
-        $"Endpoint={ eventHubsEndpoint };SharedAccessKeyName={ iotHubSharedKeyName };SharedAccessKey={ iotHubSharedKey }";
+
+        private static string BuildEventHubsConnectionString(string eventHubsEndpoint, string iotHubSharedKeyName, string iotHubSharedKey)
+        {
+            return $"Endpoint={ eventHubsEndpoint };SharedAccessKeyName={ iotHubSharedKeyName };SharedAccessKey={ iotHubSharedKey }";
+        }
     }
 }
