@@ -13,7 +13,7 @@ using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 
-namespace MessageSample
+namespace Client
 {
     public class Device
     {
@@ -35,8 +35,8 @@ namespace MessageSample
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
         }
 
-        public async Task ConnectDevice()
-        {
+        public async Task ConnectDevice(string willPayload = "")
+        { 
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
             var options = new MqttClientOptionsBuilder()
@@ -45,6 +45,7 @@ namespace MessageSample
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithTls()
+                .WithWillMessage(ConstructWillMessage(willPayload))
                 .Build();
 
             await mqttClient.ConnectAsync(options, CancellationToken.None);
@@ -65,6 +66,11 @@ namespace MessageSample
             return message;
         }
 
+        public MqttApplicationMessage ConstructWillMessage(string willPayload, bool retainFlag = true)
+        {
+            var willTopic = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
+            return ConstructMessage(willTopic, "WILL message " + willPayload, retainFlag);
+        }
 
         public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
