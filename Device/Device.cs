@@ -91,6 +91,11 @@ namespace Client
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
+        public void DisconnectUngracefully()
+        {
+            mqttClient.Dispose();
+        }
+
         private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
         {
             Console.WriteLine("Disconnected");

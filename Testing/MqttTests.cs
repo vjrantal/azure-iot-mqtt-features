@@ -95,23 +95,22 @@ namespace Testing
         }
 
         [Test]
-        public async Task SenWillMessageWhenDeviceDisconnectsUngracefully()
+        public async Task SendWillMessageWhenDeviceDisconnectsUngracefully()
         {
             // Arrange
             var willPayload = Guid.NewGuid().ToString();
 
             // Act
             await device.ConnectDevice(willPayload);
+            device.DisconnectUngracefully();
 
-            //disconnect ungracefully
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
             var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
-            //Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
-            Assert.Pass();
+            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
         }
     }
 }
