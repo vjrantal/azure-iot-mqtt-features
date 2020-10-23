@@ -11,6 +11,7 @@ using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
+using MQTTnet.Protocol;
 
 namespace MessageSample
 {
@@ -62,7 +63,7 @@ namespace MessageSample
             await mqttClient.DisconnectAsync();
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
             Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
@@ -70,14 +71,14 @@ namespace MessageSample
                 .WithTopic(topic)
                 .WithPayload(payload)
                 .WithRetainFlag(retainFlag)
-                .WithAtLeastOnceQoS()
+                .WithQualityOfServiceLevel(mqttQoSLevel)
                 .Build();
 
             return message;
         }
 
 
-        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
             var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);

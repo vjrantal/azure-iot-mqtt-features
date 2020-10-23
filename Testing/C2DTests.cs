@@ -6,6 +6,7 @@ using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
 using MQTTnet;
+using MQTTnet.Protocol;
 using NUnit.Framework;
 
 namespace Testing
@@ -61,7 +62,7 @@ namespace Testing
         public async Task SendD2CWithRetainFlagTrue()
         {
             // Arrange
-            var receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceConnectionString);
 
             await device.ConnectDevice();
@@ -74,7 +75,7 @@ namespace Testing
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert - verify message was received + mqtt-retain set to true
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
@@ -127,5 +128,24 @@ namespace Testing
             return success;
         }
 
+        public async Task ReceiveD2CMessageWithQosZero()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceConnectionString);
+            await device.ConnectDevice();
+            var payload = Guid.NewGuid().ToString();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, false, MqttQualityOfServiceLevel.AtMostOnce);
+
+            var cancellationSource = new CancellationTokenSource();
+            cancellationSource.CancelAfter(3000);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+
+            // Assert
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null);
+        }
     }
 }
