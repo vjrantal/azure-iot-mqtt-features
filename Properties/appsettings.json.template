@@ -2,5 +2,8 @@
   //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
   "IotHubDeviceConnectionString": "<yourIotHubDeviceConnectionString>",
   "IotHubConnectionString": "<yourIothubConnectionString>",
-  "DeviceId":""
+  "DeviceId":"",
+  "EventHubName": "",
+  "EventHubCompatibleEndpoint": "",
+  "IotHubSasKey": ""
 }

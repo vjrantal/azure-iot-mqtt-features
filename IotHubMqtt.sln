@@ -7,6 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device", "Device\Device.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{F737D198-2405-422D-B4C5-A6AC1EE8E877}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossCutting", "CrossCutting\CrossCutting.csproj", "{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F008C95E-EE9B-4D0B-A173-BE5C65EC5ED8}"
+	ProjectSection(SolutionItems) = preProject
+		Properties\appsettings.json = Properties\appsettings.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +36,9 @@ Global
 		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F737D198-2405-422D-B4C5-A6AC1EE8E877}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
