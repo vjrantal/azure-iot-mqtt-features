@@ -41,14 +41,13 @@ namespace Testing
             var device = new Device(iotHubDeviceConnectionString);
             var sender = new Sender(iotHubConnectionString, deviceId);
 
+            var payloads = new ConcurrentBag<string>();
             var payload = Guid.NewGuid().ToString();
-            var receivedPayload = string.Empty;
 
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
-                receivedPayload = e.ApplicationMessage.ConvertPayloadToString();
-
+                payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
@@ -56,7 +55,7 @@ namespace Testing
             await sender.SendCloudToDeviceMessageAsync(payload);
 
             // Assert
-            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == receivedPayload, TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == payload) != null, TimeSpan.FromSeconds(10)));
         }
 
         [Test]
@@ -92,18 +91,18 @@ namespace Testing
             var firstPayload = Guid.NewGuid().ToString();
             var secondPayload = Guid.NewGuid().ToString();
 
-            var payload = new ConcurrentBag<string>();
+            var payloads = new ConcurrentBag<string>();
 
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
-                payload.Add(e.ApplicationMessage.ConvertPayloadToString());
+                payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
             await sender.SendCloudToDeviceMessageAsync(firstPayload);
-            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
 
             await device.DisconnectDevice();
             Thread.Sleep(15000);
@@ -114,7 +113,7 @@ namespace Testing
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Assert
-            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
         }
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
         {
