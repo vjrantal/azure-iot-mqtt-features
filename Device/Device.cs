@@ -13,7 +13,7 @@ using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 
-namespace MessageSample
+namespace Client
 {
     public class Device
     {
@@ -21,6 +21,7 @@ namespace MessageSample
         private readonly string sharedAccessKey;
         private readonly string hubAddress;
         private readonly string deviceId;
+        private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
@@ -33,9 +34,11 @@ namespace MessageSample
             hubAddress = connectionString[0].Split('=', 2)[1];
             deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
+
+            topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
         }
 
-        public async Task ConnectDevice()
+        public async Task ConnectDevice(string willPayload = "")
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -45,6 +48,7 @@ namespace MessageSample
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithTls()
+                .WithWillMessage(ConstructWillMessage(willPayload))
                 .Build();
 
             await mqttClient.ConnectAsync(options, CancellationToken.None);
@@ -65,10 +69,13 @@ namespace MessageSample
             return message;
         }
 
+        public MqttApplicationMessage ConstructWillMessage(string willPayload, bool retainFlag = true)
+        {
+            return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
+        }
 
         public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
@@ -85,6 +92,11 @@ namespace MessageSample
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
+        public void DisconnectUngracefully()
+        {
+            mqttClient.Dispose();
+        }
+
         private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
         {
             Console.WriteLine("Disconnected");
@@ -94,9 +106,9 @@ namespace MessageSample
                 Console.WriteLine("Trying to reconnect");
                 await mqttClient.ConnectAsync(options, CancellationToken.None);
             }
-            catch
+            catch (Exception ex)
             {
-                Console.WriteLine("### RECONNECTING FAILED ###");
+                Console.WriteLine("### RECONNECTING FAILED ###" + ex.Message);
             }
 
             Console.WriteLine("Reconnected");
