@@ -21,6 +21,7 @@ namespace Client
         private readonly string sharedAccessKey;
         private readonly string hubAddress;
         private readonly string deviceId;
+        private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
@@ -33,6 +34,8 @@ namespace Client
             hubAddress = connectionString[0].Split('=', 2)[1];
             deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
+
+            topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
         }
 
         public async Task ConnectDevice(string willPayload = "")
@@ -68,13 +71,11 @@ namespace Client
 
         public MqttApplicationMessage ConstructWillMessage(string willPayload, bool retainFlag = true)
         {
-            var willTopic = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
-            return ConstructMessage(willTopic, "WILL message " + willPayload, retainFlag);
+            return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
         }
 
         public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
@@ -105,9 +106,9 @@ namespace Client
                 Console.WriteLine("Trying to reconnect");
                 await mqttClient.ConnectAsync(options, CancellationToken.None);
             }
-            catch
+            catch(Exception ex)
             {
-                Console.WriteLine("### RECONNECTING FAILED ###");
+                Console.WriteLine("### RECONNECTING FAILED ###" + ex.Message);
             }
 
             Console.WriteLine("Reconnected");
