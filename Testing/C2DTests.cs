@@ -108,6 +108,7 @@ namespace Testing
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
         }
 
+        [Test]
         public async Task ReceiveD2CMessageWithQosZero()
         {
             // Arrange
