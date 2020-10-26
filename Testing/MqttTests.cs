@@ -13,24 +13,23 @@ namespace Testing
 {
     public class MqttTests
     {
-        private Device device;
-        private Sender senderConsumer;
-        private Receiver receiverConsumer;
+        private string iotHubConnectionString;
+        private string iotHubDeviceConnectionString;
+        private string deviceId;
+        private string eventHubCompatibleEndpoint;
+        private string eventHubName;
+        private string iotHubSasKey;
 
         [SetUp]
         public void Setup()
         {
             var configuration = Configuration.BuildConfiguration();
-            var iotHubConnectionString = configuration["IotHubConnectionString"];
-            var iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
-            var deviceId = configuration["DeviceId"];
-            var eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
-            var eventHubName = configuration["EventHubName"];
-            var iotHubSasKey = configuration["IotHubSasKey"];
-
-            device = new Device(iotHubDeviceConnectionString);
-            senderConsumer = new Sender(iotHubConnectionString, deviceId);
-            receiverConsumer = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            iotHubConnectionString = configuration["IotHubConnectionString"];
+            iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            deviceId = configuration["DeviceId"];
+            eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
+            eventHubName = configuration["EventHubName"];
+            iotHubSasKey = configuration["IotHubSasKey"];
         }
 
         [Test]
@@ -38,6 +37,9 @@ namespace Testing
         {
             // Arrange
             var flag = false;
+            var device = new Device(iotHubDeviceConnectionString);
+            var sender = new Sender(iotHubConnectionString, deviceId);
+
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
@@ -47,7 +49,7 @@ namespace Testing
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
-            await senderConsumer.SendCloudToDeviceMessageAsync("test");
+            await sender.SendCloudToDeviceMessageAsync("test");
             while (!flag) { }
 
             // Assert
@@ -58,6 +60,8 @@ namespace Testing
         public async Task SendD2CWithRetainFlagTrue()
         {
             // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceConnectionString);
             await device.ConnectDevice();
 
             var retainFlag = true;
@@ -68,7 +72,7 @@ namespace Testing
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert - verify message was received + mqtt-retain set to true
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
@@ -79,6 +83,8 @@ namespace Testing
         public async Task ReceiveD2CMessageWithQosZero()
         {
             // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceConnectionString);
             await device.ConnectDevice();
             var payload = Guid.NewGuid().ToString();
 
@@ -87,7 +93,7 @@ namespace Testing
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
@@ -99,6 +105,8 @@ namespace Testing
         {
             // Arrange
             var willPayload = Guid.NewGuid().ToString();
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceConnectionString);
 
             // Act
             await device.ConnectDevice(willPayload);
@@ -106,7 +114,7 @@ namespace Testing
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);
-            var messages = await receiverConsumer.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
