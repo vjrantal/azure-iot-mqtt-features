@@ -7,7 +7,6 @@ using CrossCutting;
 using IotHubConsumer;
 using MessageSample;
 using MQTTnet;
-using MQTTnet.Protocol;
 using NUnit.Framework;
 
 namespace Testing
