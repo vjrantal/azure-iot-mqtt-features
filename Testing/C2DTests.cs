@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,17 +92,18 @@ namespace Testing
             var firstPayload = Guid.NewGuid().ToString();
             var secondPayload = Guid.NewGuid().ToString();
 
-            var payload = string.Empty;
+            var payload = new ConcurrentBag<string>();
+
             await device.ConnectDevice();
             Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
-                payload = e.ApplicationMessage.ConvertPayloadToString();
+                payload.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
             await sender.SendCloudToDeviceMessageAsync(firstPayload);
-            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == firstPayload, TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
 
             await device.DisconnectDevice();
             Thread.Sleep(15000);
@@ -112,16 +114,15 @@ namespace Testing
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Assert
-            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == secondPayload, TimeSpan.FromSeconds(10)));
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
         }
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
         {
             var success = false;
-            var elapsed = 0;
-            while ((!success) && (elapsed < timeSpan.TotalMilliseconds))
+            var start = DateTime.Now;
+
+            while ((!success) && DateTime.Now.Subtract(start).Seconds < timeSpan.Seconds)
             {
-                Thread.Sleep(100);
-                elapsed += 100;
                 success = task();
             }
             return success;
