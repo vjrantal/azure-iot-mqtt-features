@@ -83,7 +83,7 @@ namespace Testing
         }
 
         [Test]
-        public async Task ReceiveAllC2DMessagesWithCleanSessionFalse()
+        public async Task ReceiveAllC2DMessagesWhileDisconnected()
         {
             // Arrange
             var device = new Device(iotHubDeviceConnectionString);
