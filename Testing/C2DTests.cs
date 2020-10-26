@@ -108,9 +108,8 @@ namespace Testing
             await sender.SendCloudToDeviceMessageAsync(secondPayload);
 
             device = new Device(iotHubDeviceConnectionString);
-            await device.ConnectDevice(false);
+            await device.ConnectDevice();
             await device.SubscribeToEventAsync(ApplicationMessageReceived);
-            // await sender.SendCloudToDeviceMessageAsync(secondPayload);
 
             // Assert
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payload == secondPayload, TimeSpan.FromSeconds(10)));
@@ -137,7 +136,7 @@ namespace Testing
             var payload = Guid.NewGuid().ToString();
 
             // Act
-            await device.SendDeviceToCloudMessageAsync(payload, false, MqttQualityOfServiceLevel.AtMostOnce);
+            await device.SendDeviceToCloudMessageAsync(payload, false);
 
             var cancellationSource = new CancellationTokenSource();
             cancellationSource.CancelAfter(3000);

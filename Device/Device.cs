@@ -35,7 +35,7 @@ namespace MessageSample
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
         }
 
-        public async Task ConnectDevice(bool cleanSession = true)
+        public async Task ConnectDevice()
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -44,7 +44,7 @@ namespace MessageSample
                 .WithCredentials(username, password)
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
-                .WithCleanSession(cleanSession)
+                .WithCleanSession(false)
                 .WithTls()
                 .Build();
             try
@@ -63,7 +63,7 @@ namespace MessageSample
             await mqttClient.DisconnectAsync();
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)
         {
             Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
@@ -71,14 +71,14 @@ namespace MessageSample
                 .WithTopic(topic)
                 .WithPayload(payload)
                 .WithRetainFlag(retainFlag)
-                .WithQualityOfServiceLevel(mqttQoSLevel)
+                .WithAtMostOnceQoS()
                 .Build();
 
             return message;
         }
 
 
-        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
         {
             var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);
