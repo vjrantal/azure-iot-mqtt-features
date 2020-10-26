@@ -96,23 +96,6 @@ namespace MessageSample
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
-        private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
-        {
-            Console.WriteLine("Disconnected");
-
-            try
-            {
-                Console.WriteLine("Trying to reconnect");
-                await mqttClient.ConnectAsync(options, CancellationToken.None);
-            }
-            catch
-            {
-                Console.WriteLine("### RECONNECTING FAILED ###");
-            }
-
-            Console.WriteLine("Reconnected");
-        }
-
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)
         {
             var sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
