@@ -106,7 +106,7 @@ namespace Client
                 Console.WriteLine("Trying to reconnect");
                 await mqttClient.ConnectAsync(options, CancellationToken.None);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine("### RECONNECTING FAILED ###" + ex.Message);
             }
