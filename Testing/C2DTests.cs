@@ -40,16 +40,14 @@ namespace Testing
             // Arrange
             var device = new Device(iotHubDeviceConnectionString);
             var sender = new Sender(iotHubConnectionString, deviceId);
-
             var payloads = new ConcurrentBag<string>();
             var payload = Guid.NewGuid().ToString();
 
             await device.ConnectDevice();
-            Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            await device.SubscribeToEventAsync((MqttApplicationMessageReceivedEventArgs e) =>
             {
                 payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
-            };
-            await device.SubscribeToEventAsync(ApplicationMessageReceived);
+            });
 
             // Act
             await sender.SendCloudToDeviceMessageAsync(payload);
@@ -64,17 +62,14 @@ namespace Testing
             // Arrange
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceConnectionString);
+            var payload = Guid.NewGuid().ToString();
 
             await device.ConnectDevice();
 
-            var retainFlag = true;
-            var payload = Guid.NewGuid().ToString();
-
             // Act
-            await device.SendDeviceToCloudMessageAsync(payload, retainFlag);
+            await device.SendDeviceToCloudMessageAsync(payload, true);
 
-            var cancellationSource = new CancellationTokenSource();
-            cancellationSource.CancelAfter(3000);
+            var cancellationSource = new CancellationTokenSource(3000);
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
 
             // Assert - verify message was received + mqtt-retain set to true
@@ -90,17 +85,15 @@ namespace Testing
             var sender = new Sender(iotHubConnectionString, deviceId);
             var firstPayload = Guid.NewGuid().ToString();
             var secondPayload = Guid.NewGuid().ToString();
-
             var payloads = new ConcurrentBag<string>();
-
-            await device.ConnectDevice();
-            Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
                 payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
-            await device.SubscribeToEventAsync(ApplicationMessageReceived);
 
             // Act
+            await device.ConnectDevice();
+            await device.SubscribeToEventAsync(applicationMessageReceived);
             await sender.SendCloudToDeviceMessageAsync(firstPayload);
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
 
@@ -110,22 +103,10 @@ namespace Testing
 
             device = new Device(iotHubDeviceConnectionString);
             await device.ConnectDevice();
-            await device.SubscribeToEventAsync(ApplicationMessageReceived);
+            await device.SubscribeToEventAsync(applicationMessageReceived);
 
             // Assert
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
-        }
-        private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
-        {
-            var success = false;
-            var start = DateTime.Now;
-
-            while ((!success) && DateTime.Now.Subtract(start).Seconds < timeSpan.Seconds)
-            {
-                Thread.Sleep(100);
-                success = task();
-            }
-            return success;
         }
 
         public async Task ReceiveD2CMessageWithQosZero()
@@ -146,6 +127,19 @@ namespace Testing
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
             Assert.IsTrue(sentMessage != null);
+        }
+
+        private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
+        {
+            var success = false;
+            var start = DateTime.Now;
+
+            while ((!success) && DateTime.Now.Subtract(start).Seconds < timeSpan.Seconds)
+            {
+                Thread.Sleep(100);
+                success = task();
+            }
+            return success;
         }
     }
 }
