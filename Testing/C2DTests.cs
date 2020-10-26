@@ -123,6 +123,7 @@ namespace Testing
 
             while ((!success) && DateTime.Now.Subtract(start).Seconds < timeSpan.Seconds)
             {
+                Thread.Sleep(100);
                 success = task();
             }
             return success;
