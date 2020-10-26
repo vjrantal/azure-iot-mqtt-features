@@ -6,4 +6,6 @@
   "EventHubName": "",
   "EventHubCompatibleEndpoint": "",
   "IotHubSasKey": ""
+  "CustomEventHubName": "",
+  "CustomEventHubCompatibleEndpoint": ""
 }
