@@ -105,6 +105,7 @@ namespace Client
         {
             mqttClient.Dispose();
         }
+
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)
         {
             var sinceEpoch = DateTime.UtcNow - new DateTime(1970, 1, 1);
