@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using CrossCutting;
 using MQTTnet;
 
-namespace MessageSample
+namespace Client
 {
     public class Program
     {

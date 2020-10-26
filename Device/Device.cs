@@ -11,7 +11,7 @@ using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
 
-namespace MessageSample
+namespace Client
 {
     public class Device
     {
@@ -19,6 +19,7 @@ namespace MessageSample
         private readonly string sharedAccessKey;
         private readonly string hubAddress;
         private readonly string deviceId;
+        private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
@@ -31,9 +32,11 @@ namespace MessageSample
             hubAddress = connectionString[0].Split('=', 2)[1];
             deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
+
+            topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
         }
 
-        public async Task ConnectDevice()
+        public async Task ConnectDevice(string willPayload = "")
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -44,6 +47,7 @@ namespace MessageSample
                 .WithProtocolVersion(MqttProtocolVersion.V311)
                 .WithCleanSession(false)
                 .WithTls()
+                .WithWillMessage(ConstructWillMessage(willPayload))
                 .Build();
             try
             {
@@ -75,10 +79,13 @@ namespace MessageSample
             return message;
         }
 
+        public MqttApplicationMessage ConstructWillMessage(string willPayload, bool retainFlag = true)
+        {
+            return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
+        }
 
         public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
             var message = ConstructMessage(topicD2C, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
@@ -92,6 +99,11 @@ namespace MessageSample
 
             mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => applicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
+        }
+
+        public void DisconnectUngracefully()
+        {
+            mqttClient.Dispose();
         }
 
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)

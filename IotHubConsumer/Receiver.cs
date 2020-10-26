@@ -45,7 +45,12 @@ namespace IotHubConsumer
                         retainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString();
                     }
 
-                    receivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag });
+                    var messageType = "telemetry";
+                    if (partitionEvent.Data.Properties.ContainsKey("iothub-MessageType"))
+                    {
+                        messageType = partitionEvent.Data.Properties["iothub-MessageType"].ToString();
+                    }
+                    receivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag, MessageType = messageType });
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)
