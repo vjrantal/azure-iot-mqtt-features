@@ -97,7 +97,6 @@ namespace Testing
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
 
             await device.DisconnectDevice();
-            Thread.Sleep(15000);
             await sender.SendCloudToDeviceMessageAsync(secondPayload);
 
             device = new Device(iotHubDeviceConnectionString);
