@@ -53,10 +53,11 @@ namespace Client
             {
                 await mqttClient.ConnectAsync(options, CancellationToken.None);
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException e)
             {
                 // This is expected when the token is signaled; it should not be considered an
                 // error in this scenario.
+                Console.WriteLine(e.ToString());
             }
         }
 
