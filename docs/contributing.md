@@ -48,7 +48,7 @@ You will need the following dependencies installed in order to get started:
   * [Az CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) 2.12.* +
   * [Az Iot CLI](https://github.com/Azure/azure-iot-cli-extension) 0.10.* +
 * Windows:
-  * [GNUMake for windows](http://gnuwin32.sourceforge.net/packages/make.htm) (For running [GNUMake commands](../makefile))
+  * [GNUMake for windows](http://gnuwin32.sourceforge.net/packages/make.htm) (For running [make commands](../makefile))
 * An editor of your choice. We use [Visual Studio Code](https://code.visualstudio.com/Download) but any editor will do.
 
 #### Setup your workspace
@@ -69,8 +69,4 @@ You will need the following dependencies installed in order to get started:
     ```
 
 3. Create `Properties/appsettings.json` from the [`appsettings.json.template`](../Properties/appsettings.json.template)
-4. Populate secrets in `Properties/appsettings.json` with [GNUMake commands](../makefile)
-
-    ```bash
-    make get-iot-hub-conn
-    ```
+4. Populate secrets in `Properties/appsettings.json` with [make commands](../makefile) found above each secret
