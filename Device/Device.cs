@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using MQTTnet;
 using MQTTnet.Client;
+using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
+using MQTTnet.Protocol;
 
 namespace Client
 {
@@ -22,6 +26,10 @@ namespace Client
         private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
+        public List<X509Certificate> certs = new List<X509Certificate>
+        {
+           new X509Certificate2("new-device.cert.pfx", "1234")
+        };
 
         public Device(string iotHubDeviceConnectionString)
         {
@@ -66,7 +74,25 @@ namespace Client
             await mqttClient.DisconnectAsync();
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)
+        public async Task ConnectDeviceUsingCertificates()
+        {
+            var options = new MqttClientOptionsBuilder()
+                .WithTcpServer(hubAddress, 8883)
+                .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })
+                .WithClientId(deviceId)
+                .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithTls(new MqttClientOptionsBuilderTlsParameters
+                {
+                    UseTls = true,
+                    Certificates = certs
+                })
+                .Build();
+
+            await mqttClient.ConnectAsync(options, CancellationToken.None);
+        }
+
+
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {
             Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
