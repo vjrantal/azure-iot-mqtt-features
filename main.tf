@@ -46,7 +46,7 @@ resource "azurerm_iothub" "mqtt_iot" {
   route {
     name           = "customroute"
     source         = "DeviceMessages"
-    condition      = "true"
+    condition      = "topic = 'status'"
     endpoint_names = ["customevents"]
     enabled        = true
   }

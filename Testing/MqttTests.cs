@@ -7,7 +7,6 @@ using Client;
 using CrossCutting;
 using IotHubConsumer;
 using MQTTnet;
-using MQTTnet.Protocol;
 using NUnit.Framework;
 
 namespace Testing
@@ -20,11 +19,15 @@ namespace Testing
         private string eventHubCompatibleEndpoint;
         private string eventHubName;
         private string iotHubSasKey;
+        private string customEventHubCompatibleEndpoint;
+        private string customEventHubName;
 
         [SetUp]
         public void Setup()
         {
             var configuration = Configuration.BuildConfiguration();
+            customEventHubCompatibleEndpoint = configuration["CustomEventHubCompatibleEndpoint"];
+            customEventHubName = configuration["CustomEventHubName"];
             iotHubConnectionString = configuration["IotHubConnectionString"];
             iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
             deviceId = configuration["DeviceId"];
@@ -46,8 +49,10 @@ namespace Testing
             {
                 payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             });
+
             // Act
             await sender.SendCloudToDeviceMessageAsync(payload);
+
             // Assert
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == payload) != null, TimeSpan.FromSeconds(10)));
         }
@@ -64,7 +69,6 @@ namespace Testing
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, true);
-
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert - verify message was received + mqtt-retain set to true
@@ -83,10 +87,7 @@ namespace Testing
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, false);
-
-            var cancellationSource = new CancellationTokenSource();
-            cancellationSource.CancelAfter(3000);
-            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
@@ -135,14 +136,29 @@ namespace Testing
             // Act
             await device.ConnectDevice(willPayload);
             device.DisconnectUngracefully();
-
-            var cancellationSource = new CancellationTokenSource();
-            cancellationSource.CancelAfter(3000);
-            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
             Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
+        }
+
+        [Test]
+        public async Task ReceiveRoutedMessage()
+        {
+            // Arrange
+            var receiver = new Receiver(customEventHubCompatibleEndpoint, customEventHubName);
+            var device = new Device(iotHubDeviceConnectionString);
+            await device.ConnectDevice();
+            var payload = Guid.NewGuid().ToString();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, false, "&topic=status");
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null);
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)

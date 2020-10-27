@@ -14,7 +14,7 @@ namespace IotHubConsumer
         private readonly string eventHubName;
         private readonly string iotHubSasKey;
 
-        public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey)
+        public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey = null)
         {
             this.eventHubCompatibleEndpoint = eventHubCompatibleEndpoint;
             this.iotHubSasKey = iotHubSasKey;
@@ -23,7 +23,10 @@ namespace IotHubConsumer
 
         public async Task<HashSet<D2CMessage>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
-            var connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, iotHubSasKeyName, iotHubSasKey);
+            var connectionString = iotHubSasKey == null
+            ? eventHubCompatibleEndpoint
+            : BuildEventHubsConnectionString(eventHubCompatibleEndpoint, iotHubSasKeyName, iotHubSasKey);
+
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
             var receivedMessages = new HashSet<D2CMessage>();

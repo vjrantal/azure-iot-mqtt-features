@@ -69,9 +69,8 @@ You will need the following dependencies installed in order to get started:
     ```
 
 3. Create `Properties/appsettings.json` from the [`appsettings.json.template`](../Properties/appsettings.json.template)
-4. Populate secrets in `Properties/appsettings.json`
+4. Populate secrets in `Properties/appsettings.json` with [GNUMake commands](../makefile)
 
     ```bash
-    DEVICE_ID=device0001 make get-device-conn
     make get-iot-hub-conn
     ```
