@@ -21,7 +21,7 @@ namespace IotHubConsumer
             this.eventHubName = eventHubName;
         }
 
-        public async Task<HashSet<D2CMessage>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
+        public async Task<Dictionary<string, IDictionary<string, object>>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
             var connectionString = iotHubSasKey == null
             ? eventHubCompatibleEndpoint
@@ -29,7 +29,7 @@ namespace IotHubConsumer
 
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
-            var receivedMessages = new HashSet<D2CMessage>();
+            var receivedMessages = new Dictionary<string, IDictionary<string, object>>();
 
             Console.WriteLine("Listening for messages on all partitions");
 
@@ -42,18 +42,7 @@ namespace IotHubConsumer
                     var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
                     Console.WriteLine("\t{0}:", data);
 
-                    var retainFlag = "false";
-                    if (partitionEvent.Data.Properties.ContainsKey("mqtt-retain"))
-                    {
-                        retainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString();
-                    }
-
-                    var messageType = "telemetry";
-                    if (partitionEvent.Data.Properties.ContainsKey("iothub-MessageType"))
-                    {
-                        messageType = partitionEvent.Data.Properties["iothub-MessageType"].ToString();
-                    }
-                    receivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag, MessageType = messageType });
+                    receivedMessages.TryAdd(data, partitionEvent.Data.Properties);
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)

@@ -72,8 +72,8 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert - verify message was received + mqtt-retain set to true
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true");
+            var sentMessage = messages[payload];
+            Assert.IsTrue(sentMessage.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
         }
 
         [Test]
@@ -90,8 +90,7 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null);
+            Assert.IsTrue(messages.ContainsKey(payload));
         }
 
         [Test]
@@ -139,8 +138,9 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
-            Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
+            var sentMessage = messages["WILL message " + willPayload];
+            Assert.IsTrue(sentMessage.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
+            Assert.IsTrue(sentMessage.TryGetValue("iothub-MessageType", out var messageType) && messageType.ToString() == "Will");
         }
 
         [Test]
@@ -157,8 +157,8 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null);
+            var sentMessage = messages[payload];
+            Assert.IsTrue(sentMessage.TryGetValue("topic", out var value) && value.ToString() == "status");
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
