@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Client;
@@ -15,6 +16,7 @@ namespace Testing
     {
         private string iotHubConnectionString;
         private string iotHubDeviceConnectionString;
+        private string iotHubDeviceCertifConnectionString;
         private string deviceId;
         private string eventHubCompatibleEndpoint;
         private string eventHubName;
@@ -30,6 +32,7 @@ namespace Testing
             customEventHubName = configuration["CustomEventHubName"];
             iotHubConnectionString = configuration["IotHubConnectionString"];
             iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            iotHubDeviceCertifConnectionString = configuration["IotHubDeviceCertifConnectionString"];
             deviceId = configuration["DeviceId"];
             eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
             eventHubName = configuration["EventHubName"];
@@ -159,6 +162,26 @@ namespace Testing
             // Assert
             Assert.IsTrue(messages.TryGetValue(payload, out var messageProperties));
             Assert.IsTrue(messageProperties.TryGetValue("topic", out var value) && value.ToString() == "status");
+        }
+
+        [Test]
+        public async Task DeviceCanConnectUsingCertificates()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceCertifConnectionString);
+            var payload = Guid.NewGuid().ToString();
+
+            await device.ConnectDeviceUsingCertificates();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert - verify message was received + mqtt-retain set to true
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null);
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)

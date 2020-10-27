@@ -4,6 +4,8 @@
   "IotHubConnectionString": "",
   // make get-device-conn
   "IotHubDeviceConnectionString": "",
+  //
+  "IotHubDeviceCertifConnectionString": "<yourIotHubDeviceConnectionString for device with certificates>",
   // make get-event-hub-name
   "EventHubName": "",
   // make get-event-hub-endpoint
