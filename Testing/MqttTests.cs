@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,24 +37,19 @@ namespace Testing
         public async Task SendC2DMessages()
         {
             // Arrange
-            var flag = false;
             var device = new Device(iotHubDeviceConnectionString);
             var sender = new Sender(iotHubConnectionString, deviceId);
-
+            var payloads = new ConcurrentBag<string>();
+            var payload = Guid.NewGuid().ToString();
             await device.ConnectDevice();
-            Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            await device.SubscribeToEventAsync((MqttApplicationMessageReceivedEventArgs e) =>
             {
-                flag = true;
-                Console.WriteLine($"Got message: ClientId:{e.ClientId} Topic:{e.ApplicationMessage.Topic} Payload:{e.ApplicationMessage.ConvertPayloadToString()}");
-            };
-            await device.SubscribeToEventAsync(ApplicationMessageReceived);
-
+                payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
+            });
             // Act
-            await sender.SendCloudToDeviceMessageAsync("test");
-            while (!flag) { }
-
+            await sender.SendCloudToDeviceMessageAsync(payload);
             // Assert
-            Assert.IsTrue(flag);
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == payload) != null, TimeSpan.FromSeconds(10)));
         }
 
         [Test]
@@ -62,17 +58,14 @@ namespace Testing
             // Arrange
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceConnectionString);
-            await device.ConnectDevice();
-
-            var retainFlag = true;
             var payload = Guid.NewGuid().ToString();
 
-            // Act
-            await device.SendDeviceToCloudMessageAsync(payload, retainFlag);
+            await device.ConnectDevice();
 
-            var cancellationSource = new CancellationTokenSource();
-            cancellationSource.CancelAfter(3000);
-            var messages = await receiver.ReceiveMessagesFromDeviceAsync(cancellationSource.Token);
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert - verify message was received + mqtt-retain set to true
             var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
@@ -101,6 +94,37 @@ namespace Testing
         }
 
         [Test]
+        public async Task ReceiveAllC2DMessagesWhileDisconnected()
+        {
+            // Arrange
+            var device = new Device(iotHubDeviceConnectionString);
+            var sender = new Sender(iotHubConnectionString, deviceId);
+            var firstPayload = Guid.NewGuid().ToString();
+            var secondPayload = Guid.NewGuid().ToString();
+            var payloads = new ConcurrentBag<string>();
+            Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
+            {
+                payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
+            };
+
+            // Act
+            await device.ConnectDevice();
+            await device.SubscribeToEventAsync(applicationMessageReceived);
+            await sender.SendCloudToDeviceMessageAsync(firstPayload);
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
+
+            await device.DisconnectDevice();
+            await sender.SendCloudToDeviceMessageAsync(secondPayload);
+
+            device = new Device(iotHubDeviceConnectionString);
+            await device.ConnectDevice();
+            await device.SubscribeToEventAsync(applicationMessageReceived);
+
+            // Assert
+            Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
+        }
+
+        [Test]
         public async Task SendWillMessageWhenDeviceDisconnectsUngracefully()
         {
             // Arrange
@@ -119,6 +143,19 @@ namespace Testing
             // Assert
             var sentMessage = messages.FirstOrDefault(x => x.Payload == "WILL message " + willPayload);
             Assert.IsTrue(sentMessage != null && sentMessage.RetainFlag == "true" && sentMessage.MessageType == "Will");
+        }
+
+        private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
+        {
+            var success = false;
+            var start = DateTime.Now;
+
+            while ((!success) && DateTime.Now.Subtract(start).Seconds < timeSpan.Seconds)
+            {
+                Thread.Sleep(100);
+                success = task();
+            }
+            return success;
         }
     }
 }
