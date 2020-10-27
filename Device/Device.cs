@@ -7,11 +7,9 @@ using System.Threading.Tasks;
 using System.Web;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
-using MQTTnet.Protocol;
 
 namespace Client
 {
@@ -47,15 +45,28 @@ namespace Client
                 .WithCredentials(username, password)
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithCleanSession(false)
                 .WithTls()
                 .WithWillMessage(ConstructWillMessage(willPayload))
                 .Build();
-
-            await mqttClient.ConnectAsync(options, CancellationToken.None);
-            mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
+            try
+            {
+                await mqttClient.ConnectAsync(options, CancellationToken.None);
+            }
+            catch (TaskCanceledException e)
+            {
+                // This is expected when the token is signaled; it should not be considered an
+                // error in this scenario.
+                Console.WriteLine(e.ToString());
+            }
         }
 
-        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
+        public async Task DisconnectDevice()
+        {
+            await mqttClient.DisconnectAsync();
+        }
+
+        public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false)
         {
             Console.WriteLine($"Topic:{topic} Payload:{payload}");
 
@@ -63,7 +74,7 @@ namespace Client
                 .WithTopic(topic)
                 .WithPayload(payload)
                 .WithRetainFlag(retainFlag)
-                .WithQualityOfServiceLevel(mqttQoSLevel)
+                .WithAtMostOnceQoS()
                 .Build();
 
             return message;
@@ -74,7 +85,7 @@ namespace Client
             return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
         }
 
-        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
         {
             var message = ConstructMessage(topicD2C, payload, retainFlag);
 
@@ -85,33 +96,15 @@ namespace Client
 
         public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
-            ApplicationMessageReceived = applicationMessageReceived;
             var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
-            mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => ApplicationMessageReceived(e)));
+            mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => applicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
         public void DisconnectUngracefully()
         {
             mqttClient.Dispose();
-        }
-
-        private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
-        {
-            Console.WriteLine("Disconnected");
-
-            try
-            {
-                Console.WriteLine("Trying to reconnect");
-                await mqttClient.ConnectAsync(options, CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("### RECONNECTING FAILED ###" + ex.Message);
-            }
-
-            Console.WriteLine("Reconnected");
         }
 
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)

@@ -12,13 +12,13 @@ To get started with contributing, see [docs/contributing](docs/contributing.md)
 
 ## Test scenarios
 
-### Client receives all C2D messages without setting clean session
+### Client receives all C2D messages while disconnected with clean session set to false
 
 * Subscribe to `devices/{device_id}/messages/devicebound/#`
 * Send C2D and verify client receive
 * Shutdown client
 * Send another C2D
-* Start client and subscribe again
+* Start client with clean session set to false and subscribe again
 * Verify that client receives the message sent while being disconnected
 
 ### Client can send D2C messages with QoS 0
