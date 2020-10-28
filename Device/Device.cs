@@ -85,9 +85,9 @@ namespace Client
             return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
         }
 
-        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false)
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, string topicParameters = "")
         {
-            var message = ConstructMessage(topicD2C, payload, retainFlag);
+            var message = ConstructMessage(topicD2C + topicParameters, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
             await mqttClient.PublishAsync(message, CancellationToken.None);

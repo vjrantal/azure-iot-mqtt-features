@@ -1,9 +1,17 @@
 {
-  //  "HostName=<iothub_host_name>;DeviceId=<device_id>;ModuleId=<module_id>;SharedAccessKey=<device_key>"
-  "IotHubDeviceConnectionString": "<yourIotHubDeviceConnectionString>",
-  "IotHubConnectionString": "<yourIothubConnectionString>",
   "DeviceId":"",
+  // make get-iot-hub-conn
+  "IotHubConnectionString": "",
+  // make get-device-conn
+  "IotHubDeviceConnectionString": "",
+  // make get-event-hub-name
   "EventHubName": "",
+  // make get-event-hub-endpoint
   "EventHubCompatibleEndpoint": "",
+  // make get-iot-hub-sas-key
   "IotHubSasKey": ""
+  // make get-custom-event-hub-name
+  "CustomEventHubName": "",
+  // make get-custom-event-hub-endpoint
+  "CustomEventHubCompatibleEndpoint": ""
 }
