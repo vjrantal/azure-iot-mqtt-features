@@ -72,8 +72,8 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert - verify message was received + mqtt-retain set to true
-            var sentMessage = messages[payload];
-            Assert.IsTrue(sentMessage.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
+            Assert.IsTrue(messages.TryGetValue(payload, out var messageProperties));
+            Assert.IsTrue(messageProperties.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
         }
 
         [Test]
@@ -138,9 +138,9 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
-            var sentMessage = messages["WILL message " + willPayload];
-            Assert.IsTrue(sentMessage.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
-            Assert.IsTrue(sentMessage.TryGetValue("iothub-MessageType", out var messageType) && messageType.ToString() == "Will");
+            Assert.IsTrue(messages.TryGetValue("WILL message " + willPayload, out var messageProperties));
+            Assert.IsTrue(messageProperties.TryGetValue("mqtt-retain", out var retain) && retain.ToString() == "true");
+            Assert.IsTrue(messageProperties.TryGetValue("iothub-MessageType", out var messageType) && messageType.ToString() == "Will");
         }
 
         [Test]
@@ -157,8 +157,8 @@ namespace Testing
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
             // Assert
-            var sentMessage = messages[payload];
-            Assert.IsTrue(sentMessage.TryGetValue("topic", out var value) && value.ToString() == "status");
+            Assert.IsTrue(messages.TryGetValue(payload, out var messageProperties));
+            Assert.IsTrue(messageProperties.TryGetValue("topic", out var value) && value.ToString() == "status");
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
