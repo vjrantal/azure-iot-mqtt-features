@@ -184,6 +184,26 @@ namespace Testing
             Assert.IsTrue(sentMessage != null);
         }
 
+        [Test]
+        public async Task DeviceCanConnectUsingCertificates()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceCertifConnectionString);
+            var payload = Guid.NewGuid().ToString();
+
+            await device.ConnectDeviceUsingCertificates();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert - verify message was received + mqtt-retain set to true
+            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
+            Assert.IsTrue(sentMessage != null);
+        }
+
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
         {
             var success = false;
