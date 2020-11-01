@@ -165,43 +165,20 @@ namespace Testing
         }
 
         [Test]
-        public async Task DeviceCanConnectUsingCertificates()
+        public async Task DeviceCanConnectUsingCACertificate()
         {
             // Arrange
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceCertifConnectionString);
             var payload = Guid.NewGuid().ToString();
-
-            await device.ConnectDeviceUsingCertificates();
-
-            // Act
-            await device.SendDeviceToCloudMessageAsync(payload, true);
-
-            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
-
-            // Assert - verify message was received + mqtt-retain set to true
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null);
-        }
-
-        [Test]
-        public async Task DeviceCanConnectUsingCertificates()
-        {
-            // Arrange
-            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
-            var device = new Device(iotHubDeviceCertifConnectionString);
-            var payload = Guid.NewGuid().ToString();
-
-            await device.ConnectDeviceUsingCertificates();
+            await device.ConnectDeviceUsingCACertificate();
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, true);
-
             var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
 
-            // Assert - verify message was received + mqtt-retain set to true
-            var sentMessage = messages.FirstOrDefault(x => x.Payload == payload);
-            Assert.IsTrue(sentMessage != null);
+            // Assert 
+            Assert.IsTrue(messages.ContainsKey(payload));
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)

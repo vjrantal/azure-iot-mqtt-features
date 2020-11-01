@@ -26,9 +26,9 @@ namespace Client
         private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
-        public List<X509Certificate> certs = new List<X509Certificate>
+        public List<X509Certificate> Certificates = new List<X509Certificate>
         {
-           new X509Certificate2("new-device.cert.pfx", "1234")
+           new X509Certificate2("CA-Certificate.pfx", "1234")
         };
 
         public Device(string iotHubDeviceConnectionString)
@@ -74,7 +74,7 @@ namespace Client
             await mqttClient.DisconnectAsync();
         }
 
-        public async Task ConnectDeviceUsingCertificates()
+        public async Task ConnectDeviceUsingCACertificate()
         {
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
@@ -84,7 +84,7 @@ namespace Client
                 .WithTls(new MqttClientOptionsBuilderTlsParameters
                 {
                     UseTls = true,
-                    Certificates = certs
+                    Certificates = Certificates
                 })
                 .Build();
 
