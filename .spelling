@@ -15,3 +15,7 @@ MQTTnet
 az
 iot
 QoS
+ - docs/CACertificates/CACertificateForDevice.md
+e.g.
+X.509
+key.pem

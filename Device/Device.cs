@@ -27,7 +27,6 @@ namespace Client
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
-
         public Device(string iotHubDeviceConnectionString)
         {
             var factory = new MqttFactory();
