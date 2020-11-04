@@ -1,13 +1,27 @@
 DEVICE_ID?=device0001
+DEVICE_ID2?=device0002
+DEVICE_ID2?=device0003
 
 create-device:
 	az iot hub device-identity create --device-id $(DEVICE_ID) --hub-name $$(terraform output iothub_name)
+
+create-device-ca-cert:
+	az iot hub device-identity create --device-id $(DEVICE_ID2) --hub-name $$(terraform output iothub_name) --am x509_ca
+
+create-device-selfsign-cert:
+	az iot hub device-identity create --device-id $(DEVICE_ID3) --hub-name $$(terraform output iothub_name) --am x509_ca_thumbprint --ptp {thumbprint} --stp {thumbprint}
 
 list-devices: 
 	az iot hub device-identity list --hub-name $$(terraform output iothub_name)
 
 get-device-conn:
 	az iot hub device-identity connection-string show --device-id $(DEVICE_ID) --hub-name $$(terraform output iothub_name)
+
+get-ca-device-conn:
+	az iot hub device-identity connection-string show --device-id $(DEVICE_ID2) --hub-name $$(terraform output iothub_name)
+
+get-selfsign-device-conn:
+	az iot hub device-identity connection-string show --device-id $(DEVICE_ID3) --hub-name $$(terraform output iothub_name)
 
 get-iot-hub-conn:
 	az iot hub connection-string show
