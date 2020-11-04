@@ -14,13 +14,4 @@
   <ItemGroup>
     <ProjectReference Include="..\CrossCutting\CrossCutting.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Certificates\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Certificates\CA-Certificate.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

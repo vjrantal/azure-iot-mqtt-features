@@ -26,10 +26,7 @@ namespace Client
         private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
-        public List<X509Certificate> Certificates = new List<X509Certificate>
-        {
-           new X509Certificate2("CA-Certificate.pfx", "1234")
-        };
+
 
         public Device(string iotHubDeviceConnectionString)
         {
@@ -76,6 +73,7 @@ namespace Client
 
         public async Task ConnectDeviceUsingCACertificate()
         {
+            var certificates = new List<X509Certificate>() { new X509Certificate2("CA-Certificate.pfx", "1234") };
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
                 .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })
@@ -84,13 +82,30 @@ namespace Client
                 .WithTls(new MqttClientOptionsBuilderTlsParameters
                 {
                     UseTls = true,
-                    Certificates = Certificates
+                    Certificates = certificates
                 })
                 .Build();
 
             await mqttClient.ConnectAsync(options, CancellationToken.None);
         }
 
+        public async Task ConnectDeviceUsingSelfSignedCertificate()
+        {
+            var certificates = new List<X509Certificate>() { new X509Certificate2("SelfSigned-Certificate.pfx", "1234") };
+            var options = new MqttClientOptionsBuilder()
+                .WithTcpServer(hubAddress, 8883)
+                .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })
+                .WithClientId(deviceId)
+                .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithTls(new MqttClientOptionsBuilderTlsParameters
+                {
+                    UseTls = true,
+                    Certificates = certificates
+                })
+                .Build();
+
+            await mqttClient.ConnectAsync(options, CancellationToken.None);
+        }
 
         public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
         {

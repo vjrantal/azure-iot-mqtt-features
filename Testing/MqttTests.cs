@@ -17,6 +17,7 @@ namespace Testing
         private string iotHubConnectionString;
         private string iotHubDeviceConnectionString;
         private string iotHubDeviceCertifConnectionString;
+        private string iotHubDeviceSelfSignedCertifConnectionString;
         private string deviceId;
         private string eventHubCompatibleEndpoint;
         private string eventHubName;
@@ -32,6 +33,7 @@ namespace Testing
             customEventHubName = configuration["CustomEventHubName"];
             iotHubConnectionString = configuration["IotHubConnectionString"];
             iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            iotHubDeviceSelfSignedCertifConnectionString = configuration["IotHubDeviceSelfSignedCertifConnectionString"];
             iotHubDeviceCertifConnectionString = configuration["IotHubDeviceCertifConnectionString"];
             deviceId = configuration["DeviceId"];
             eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
@@ -172,6 +174,23 @@ namespace Testing
             var device = new Device(iotHubDeviceCertifConnectionString);
             var payload = Guid.NewGuid().ToString();
             await device.ConnectDeviceUsingCACertificate();
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert 
+            Assert.IsTrue(messages.ContainsKey(payload));
+        }
+
+        [Test]
+        public async Task DeviceCanConnectUsingSelfSignedCertificate()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceSelfSignedCertifConnectionString);
+            var payload = Guid.NewGuid().ToString();
+            await device.ConnectDeviceUsingSelfSignedCertificate();
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, true);

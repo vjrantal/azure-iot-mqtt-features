@@ -6,6 +6,8 @@
   "IotHubDeviceConnectionString": "",
   //
   "IotHubDeviceCertifConnectionString": "<yourIotHubDeviceConnectionString for device with certificates>",
+  //
+  "IotHubDeviceSelfSignedCertifConnectionString": "",
   // make get-event-hub-name
   "EventHubName": "",
   // make get-event-hub-endpoint
