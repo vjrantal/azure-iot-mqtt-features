@@ -6,10 +6,10 @@
   "IotHubDeviceConnectionString": "",
   // make create-device-ca-cert 
   // make get-ca-device-conn
-  "IotHubDeviceCertifConnectionString": "",
+  "IotHubDeviceCertConnectionString": "",
   // make create-device-selfsign-cert 
   // make get-selfsign-device-conn
-  "IotHubDeviceSelfSignedCertifConnectionString": "",
+  "IotHubDeviceSelfSignedCertConnectionString": "",
   // make get-event-hub-name
   "EventHubName": "",
   // make get-event-hub-endpoint

@@ -16,8 +16,8 @@ namespace Testing
     {
         private string iotHubConnectionString;
         private string iotHubDeviceConnectionString;
-        private string iotHubDeviceCertifConnectionString;
-        private string iotHubDeviceSelfSignedCertifConnectionString;
+        private string iotHubDeviceCertConnectionString;
+        private string iotHubDeviceSelfSignedCertConnectionString;
         private string deviceId;
         private string eventHubCompatibleEndpoint;
         private string eventHubName;
@@ -33,8 +33,8 @@ namespace Testing
             customEventHubName = configuration["CustomEventHubName"];
             iotHubConnectionString = configuration["IotHubConnectionString"];
             iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
-            iotHubDeviceSelfSignedCertifConnectionString = configuration["IotHubDeviceSelfSignedCertifConnectionString"];
-            iotHubDeviceCertifConnectionString = configuration["IotHubDeviceCertifConnectionString"];
+            iotHubDeviceSelfSignedCertConnectionString = configuration["IotHubDeviceSelfSignedCertConnectionString"];
+            iotHubDeviceCertConnectionString = configuration["IotHubDeviceCertConnectionString"];
             deviceId = configuration["DeviceId"];
             eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
             eventHubName = configuration["EventHubName"];
@@ -171,7 +171,7 @@ namespace Testing
         {
             // Arrange
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
-            var device = new Device(iotHubDeviceCertifConnectionString);
+            var device = new Device(iotHubDeviceCertConnectionString);
             var payload = Guid.NewGuid().ToString();
             await device.ConnectDeviceUsingCACertificate();
 
@@ -188,7 +188,7 @@ namespace Testing
         {
             // Arrange
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
-            var device = new Device(iotHubDeviceSelfSignedCertifConnectionString);
+            var device = new Device(iotHubDeviceSelfSignedCertConnectionString);
             var payload = Guid.NewGuid().ToString();
             await device.ConnectDeviceUsingSelfSignedCertificate();
 
