@@ -69,27 +69,9 @@ namespace Client
             await mqttClient.DisconnectAsync();
         }
 
-        public async Task ConnectDeviceUsingCACertificate()
+        public async Task ConnectDeviceUsingCertificate(X509Certificate2 certificate)
         {
-            var certificates = new List<X509Certificate>() { new X509Certificate2("CA-Certificate.pfx", "1234") };
-            var options = new MqttClientOptionsBuilder()
-                .WithTcpServer(hubAddress, 8883)
-                .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })
-                .WithClientId(deviceId)
-                .WithProtocolVersion(MqttProtocolVersion.V311)
-                .WithTls(new MqttClientOptionsBuilderTlsParameters
-                {
-                    UseTls = true,
-                    Certificates = certificates
-                })
-                .Build();
-
-            await mqttClient.ConnectAsync(options, CancellationToken.None);
-        }
-
-        public async Task ConnectDeviceUsingSelfSignedCertificate()
-        {
-            var certificates = new List<X509Certificate>() { new X509Certificate2("SelfSigned-Certificate.pfx", "1234") };
+            var certificates = new List<X509Certificate>() { certificate };
             var options = new MqttClientOptionsBuilder()
                 .WithTcpServer(hubAddress, 8883)
                 .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })

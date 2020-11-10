@@ -173,7 +173,7 @@ namespace Testing
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceCertConnectionString);
             var payload = Guid.NewGuid().ToString();
-            await device.ConnectDeviceUsingCACertificate();
+            await device.ConnectDeviceUsingCertificate(new X509Certificate2("Certificates/CA-Certificate.pfx", "1234"));
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, true);
@@ -190,7 +190,7 @@ namespace Testing
             var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
             var device = new Device(iotHubDeviceSelfSignedCertConnectionString);
             var payload = Guid.NewGuid().ToString();
-            await device.ConnectDeviceUsingSelfSignedCertificate();
+            await device.ConnectDeviceUsingCertificate(new X509Certificate2("Certificates/SelfSigned-Certificate.pfx", "1234"));
 
             // Act
             await device.SendDeviceToCloudMessageAsync(payload, true);
