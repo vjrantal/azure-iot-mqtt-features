@@ -13,7 +13,7 @@ A more detailed document showing UI screen shots for CA Certificates and proof o
 
 ## USE
 
-## Step 1 - Initial Setup
+### Step 1 - Initial Setup
 
 You'll need to do some initial setup prior to running these script.
 
@@ -22,7 +22,7 @@ You'll need to do some initial setup prior to running these script.
 * `cp *.cnf` and `cp *.sh` from the directory this .MD file is located into your working directory.
 * `chmod 700 certGen.sh`
 
-## Step 2 - Create the certificate chain
+### Step 2 - Create the certificate chain
 
 First you need to create a CA and an intermediate certificate signer that chains back to the CA.
 
@@ -30,7 +30,7 @@ First you need to create a CA and an intermediate certificate signer that chains
 
 Next, go to Azure IoT Hub and navigate to Certificates.  Add a new certificate, providing the root CA file when prompted.  (`./certs/azure-iot-test-only.root.ca.cert.pem`)
 
-## Step 3 - Proof of Possession
+### Step 3 - Proof of Possession
 
 Now that you've registered your root CA with Azure IoT Hub, you'll need to prove that you actually own it.
 
@@ -40,7 +40,7 @@ Select the new certificate that you've created and navigate to and select  "Gene
 
 The scripts will output the name of the file containing `"CN=106A5SD242AF512B3498BD6098C4941E66R34H268DDB3288"` to the console.  Upload this file to IoT Hub (in the same UX that had the "Generate Verification Code") and select "Verify".
 
-## Step 4 - Create a new device
+### Step 4 - Create a new device
 
 On Azure IoT Hub, navigate to the IoT Devices section, or launch Azure IoT Explorer.  Add a new device (e.g. `mydevice`), and for its authentication type chose "X.509 CA Signed".  Devices can authenticate to IoT Hub using a certificate that is signed by the Root CA from Step 2.
 

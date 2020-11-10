@@ -15,7 +15,9 @@ MQTTnet
 az
 iot
 QoS
- - docs/CACertificates/CACertificateForDevice.md
+portecle
+p12
+pfx
 e.g.
-X.509
+x.509
 key.pem
