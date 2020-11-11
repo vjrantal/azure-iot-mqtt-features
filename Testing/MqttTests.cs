@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Client;
@@ -15,6 +16,8 @@ namespace Testing
     {
         private string iotHubConnectionString;
         private string iotHubDeviceConnectionString;
+        private string iotHubDeviceCertConnectionString;
+        private string iotHubDeviceSelfSignedCertConnectionString;
         private string deviceId;
         private string eventHubCompatibleEndpoint;
         private string eventHubName;
@@ -30,6 +33,8 @@ namespace Testing
             customEventHubName = configuration["CustomEventHubName"];
             iotHubConnectionString = configuration["IotHubConnectionString"];
             iotHubDeviceConnectionString = configuration["IotHubDeviceConnectionString"];
+            iotHubDeviceSelfSignedCertConnectionString = configuration["IotHubDeviceSelfSignedCertConnectionString"];
+            iotHubDeviceCertConnectionString = configuration["IotHubDeviceCertConnectionString"];
             deviceId = configuration["DeviceId"];
             eventHubCompatibleEndpoint = configuration["EventHubCompatibleEndpoint"];
             eventHubName = configuration["EventHubName"];
@@ -159,6 +164,40 @@ namespace Testing
             // Assert
             Assert.IsTrue(messages.TryGetValue(payload, out var messageProperties));
             Assert.IsTrue(messageProperties.TryGetValue("topic", out var value) && value.ToString() == "status");
+        }
+
+        [Test]
+        public async Task DeviceCanConnectUsingCACertificate()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceCertConnectionString);
+            var payload = Guid.NewGuid().ToString();
+            await device.ConnectDeviceUsingCertificate(new X509Certificate2("Certificates/CA-Certificate.pfx", "1234"));
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert 
+            Assert.IsTrue(messages.ContainsKey(payload));
+        }
+
+        [Test]
+        public async Task DeviceCanConnectUsingSelfSignedCertificate()
+        {
+            // Arrange
+            var receiver = new Receiver(eventHubCompatibleEndpoint, eventHubName, iotHubSasKey);
+            var device = new Device(iotHubDeviceSelfSignedCertConnectionString);
+            var payload = Guid.NewGuid().ToString();
+            await device.ConnectDeviceUsingCertificate(new X509Certificate2("Certificates/SelfSigned-Certificate.pfx", "1234"));
+
+            // Act
+            await device.SendDeviceToCloudMessageAsync(payload, true);
+            var messages = await receiver.ReceiveMessagesFromDeviceAsync(new CancellationTokenSource(3000).Token);
+
+            // Assert 
+            Assert.IsTrue(messages.ContainsKey(payload));
         }
 
         private bool RetryUntilSuccessOrTimeout(Func<bool> task, TimeSpan timeSpan)
