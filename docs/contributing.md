@@ -58,6 +58,7 @@ You will need the following dependencies installed in order to get started:
      2. Execute terraform from the root folder:
 
         ```bash
+        cd terraform
         terraform init
         terraform apply
         ```

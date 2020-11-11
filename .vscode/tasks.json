@@ -17,7 +17,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder"
+                "${workspaceFolder}"
             ],
             "problemMatcher": "$tsc"
         },
