@@ -43,10 +43,19 @@ To get started with contributing, see [docs/contributing](docs/contributing.md)
 * Verify received
 * Verify `x-opt-retain` application property in the message
 
-### Client can authentication with certificates
+### Client can authenticate with certificates
 
+* Client uses a CA signed certificate
+* Client uses a self-signed certificate
+  
 ### Client messages can be routed (optional)
 
 * Setup routing as described in <https://stackoverflow.com/questions/51160000/azure-iothub-devicemessage-and-route-filter>
 * Send D2C to topic `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8`
 * Verify routing is applied
+
+## Outcome
+
+* All test scenarios ran successfully
+* The `x-opt-retain` application property actually appears as `mqtt-retain` so a [PR](https://github.com/MicrosoftDocs/azure-docs/pull/64738) was created and merged into [azure-docs](https://github.com/MicrosoftDocs/azure-docs)  repository to make a correction
+  
