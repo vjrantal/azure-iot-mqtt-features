@@ -58,6 +58,7 @@ You will need the following dependencies installed in order to get started:
      2. Execute terraform from the root folder:
 
         ```bash
+        cd terraform
         terraform init
         terraform apply
         ```
@@ -68,8 +69,8 @@ You will need the following dependencies installed in order to get started:
     DEVICE_ID=device0001 make create-device
     ```
 
-3. Create `Properties/appsettings.json` from the [`appsettings.json.template`](../Properties/appsettings.json.template)
+3. Create `Properties/appsettings.json` from the [`appsettings.json.template`](../src/Properties/appsettings.json.template)
 4. Populate secrets in `Properties/appsettings.json` with [make commands](../makefile) found above each secret
 5. Generate a CA certificate as described in [`generate-CA-certificate.md`](generating-CA-certificate/generate-CA-certificate.md)
 6. Generate a self-signed certificate by using [Portecle](https://sourceforge.net/projects/portecleinstall/) to export a private key .p12 file and then change the extension to .pfx file
-7. Replace the [`CA-Certificate.pfx.template`](../Testing/Certificates/CA-Certificate.pfx.template) and [`SelfSigned-Certificate.pfx.template`](../Testing/Certificates/SelfSigned-Certificate.pfx.template) with the files generated previously.
+7. Replace the [`CA-Certificate.pfx.template`](../src/Testing/Certificates/CA-Certificate.pfx.template) and [`SelfSigned-Certificate.pfx.template`](../src/Testing/Certificates/SelfSigned-Certificate.pfx.template) with the files generated previously.

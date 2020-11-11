@@ -1,17 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IotHubConsumer", "IotHubConsumer\IotHubConsumer.csproj", "{3D198647-0802-4237-A12F-6FDEC67269B5}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IotHubConsumer", "src\IotHubConsumer\IotHubConsumer.csproj", "{3D198647-0802-4237-A12F-6FDEC67269B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device", "Device\Device.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device", "src\Device\Device.csproj", "{F614907D-C166-435F-8292-28118209EE41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "Testing\Testing.csproj", "{F737D198-2405-422D-B4C5-A6AC1EE8E877}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "src\Testing\Testing.csproj", "{F737D198-2405-422D-B4C5-A6AC1EE8E877}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossCutting", "CrossCutting\CrossCutting.csproj", "{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrossCutting", "src\CrossCutting\CrossCutting.csproj", "{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F008C95E-EE9B-4D0B-A173-BE5C65EC5ED8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "src\Properties", "{AAD2697E-6AA3-49A4-B272-0ED4C8969A60}"
 	ProjectSection(SolutionItems) = preProject
-		Properties\appsettings.json = Properties\appsettings.json
+		src\Properties\appsettings.json = src\Properties\appsettings.json
+		src\Properties\appsettings.json.template = src\Properties\appsettings.json.template
 	EndProjectSection
 EndProject
 Global
@@ -20,10 +23,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0ED4817F-9C1C-4CE0-8E72-F9B438129029}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D198647-0802-4237-A12F-6FDEC67269B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D198647-0802-4237-A12F-6FDEC67269B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D198647-0802-4237-A12F-6FDEC67269B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,5 +39,11 @@ Global
 		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9F8428AB-B0E8-451C-8EA5-B19F90AA36BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {393567EE-E047-4B28-8243-B50CCF2A8FEF}
 	EndGlobalSection
 EndGlobal
