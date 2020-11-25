@@ -101,7 +101,7 @@ namespace Testing
         [Test]
         public async Task ReceiveAllC2DMessagesWhileDisconnected()
         {
-            //Arrange
+            // Arrange
             var device = new Device(iotHubDeviceConnectionString);
             var sender = new Sender(iotHubConnectionString, deviceId);
             var payloads = new ConcurrentBag<string>();
@@ -110,7 +110,8 @@ namespace Testing
                 payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
 
-            //Send first payload when device is connected 
+            // Act & Assert
+            // Send first payload when device is connected 
             var firstPayload = Guid.NewGuid().ToString();
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(applicationMessageReceived);
@@ -120,7 +121,7 @@ namespace Testing
 
             await device.DisconnectDevice();
 
-            //Send second payload when device is disconnected 
+            // Send second payload when device is disconnected 
             var secondPayload = Guid.NewGuid().ToString();
             await sender.SendCloudToDeviceMessageAsync(secondPayload);
             await device.ConnectDevice();
