@@ -104,28 +104,29 @@ namespace Testing
             // Arrange
             var device = new Device(iotHubDeviceConnectionString);
             var sender = new Sender(iotHubConnectionString, deviceId);
-            var firstPayload = Guid.NewGuid().ToString();
-            var secondPayload = Guid.NewGuid().ToString();
             var payloads = new ConcurrentBag<string>();
             Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived = (MqttApplicationMessageReceivedEventArgs e) =>
             {
                 payloads.Add(e.ApplicationMessage.ConvertPayloadToString());
             };
 
-            // Act
+            // Act & Assert
+            // Send first payload when device is connected 
+            var firstPayload = Guid.NewGuid().ToString();
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(applicationMessageReceived);
             await sender.SendCloudToDeviceMessageAsync(firstPayload);
+
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == firstPayload) != null, TimeSpan.FromSeconds(10)));
 
             await device.DisconnectDevice();
-            await sender.SendCloudToDeviceMessageAsync(secondPayload);
 
-            device = new Device(iotHubDeviceConnectionString);
+            // Send second payload when device is disconnected 
+            var secondPayload = Guid.NewGuid().ToString();
+            await sender.SendCloudToDeviceMessageAsync(secondPayload);
             await device.ConnectDevice();
             await device.SubscribeToEventAsync(applicationMessageReceived);
 
-            // Assert
             Assert.IsTrue(RetryUntilSuccessOrTimeout(() => payloads.FirstOrDefault(x => x == secondPayload) != null, TimeSpan.FromSeconds(10)));
         }
 
