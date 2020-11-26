@@ -35,13 +35,13 @@ To get started with contributing, see [docs/contributing](docs/contributing.md)
 * Forcefully shutdown client (`ctrl+c`)
 * Verify Will message received
 * Verify the message has the `iothub-MessageType` property with a value of Will assigned to it
-* Check whether `x-opt-retain` application property exists in the message (not documented what is expected)
+* Check whether `mqtt-retain` application property exists in the message (not documented what is expected)
 
 ### Client can send retained messages
 
 * Client send D2C message with RETAIN flag set to 1
 * Verify received
-* Verify `x-opt-retain` application property in the message
+* Verify `mqtt-retain` application property in the message
 
 ### Client can authenticate with certificates
 
