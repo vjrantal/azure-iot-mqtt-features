@@ -1,7 +1,5 @@
 # Azure IoT MQTT features
 
-![build](https://github.com/vjrantal/azure-iot-mqtt-features/workflows/build/badge.svg)
-
 ## Contributing
 
 To get started with contributing, see [docs/contributing](docs/contributing.md)
