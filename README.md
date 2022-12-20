@@ -12,13 +12,13 @@ To get started with contributing, see [docs/contributing](docs/contributing.md)
 
 ## Test scenarios
 
-### Client receives all C2D messages without setting clean session
+### Client receives all C2D messages while disconnected with clean session set to false
 
 * Subscribe to `devices/{device_id}/messages/devicebound/#`
 * Send C2D and verify client receive
 * Shutdown client
 * Send another C2D
-* Start client and subscribe again
+* Start client with clean session set to false and subscribe again
 * Verify that client receives the message sent while being disconnected
 
 ### Client can send D2C messages with QoS 0
@@ -35,18 +35,27 @@ To get started with contributing, see [docs/contributing](docs/contributing.md)
 * Forcefully shutdown client (`ctrl+c`)
 * Verify Will message received
 * Verify the message has the `iothub-MessageType` property with a value of Will assigned to it
-* Check whether `x-opt-retain` application property exists in the message (not documented what is expected)
+* Check whether `mqtt-retain` application property exists in the message (not documented what is expected)
 
 ### Client can send retained messages
 
 * Client send D2C message with RETAIN flag set to 1
 * Verify received
-* Verify `x-opt-retain` application property in the message
+* Verify `mqtt-retain` application property in the message
 
-### Client can authentication with certificates
+### Client can authenticate with certificates
 
+* Client uses a CA signed certificate
+* Client uses a self-signed certificate
+  
 ### Client messages can be routed (optional)
 
 * Setup routing as described in <https://stackoverflow.com/questions/51160000/azure-iothub-devicemessage-and-route-filter>
 * Send D2C to topic `devices/{device_id}/messages/events/$.ct=application%2Fjson&$.ce=utf-8`
 * Verify routing is applied
+
+## Outcome
+
+* All test scenarios ran successfully
+* The `x-opt-retain` application property actually appears as `mqtt-retain` so a [PR](https://github.com/MicrosoftDocs/azure-docs/pull/64738) was created and merged into [azure-docs](https://github.com/MicrosoftDocs/azure-docs)  repository to make a correction
+  

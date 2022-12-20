@@ -9,25 +9,27 @@ namespace IotHubConsumer
 {
     public class Receiver
     {
-        private const string IotHubSasKeyName = "service";
+        private const string iotHubSasKeyName = "service";
         private readonly string eventHubCompatibleEndpoint;
         private readonly string eventHubName;
-
         private readonly string iotHubSasKey;
 
-        public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey)
+        public Receiver(string eventHubCompatibleEndpoint, string eventHubName, string iotHubSasKey = null)
         {
             this.eventHubCompatibleEndpoint = eventHubCompatibleEndpoint;
             this.iotHubSasKey = iotHubSasKey;
             this.eventHubName = eventHubName;
         }
 
-        public async Task<HashSet<D2CMessage>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
+        public async Task<Dictionary<string, IDictionary<string, object>>> ReceiveMessagesFromDeviceAsync(CancellationToken cancellationToken)
         {
-            string connectionString = BuildEventHubsConnectionString(eventHubCompatibleEndpoint, IotHubSasKeyName, iotHubSasKey);
+            var connectionString = iotHubSasKey == null
+            ? eventHubCompatibleEndpoint
+            : BuildEventHubsConnectionString(eventHubCompatibleEndpoint, iotHubSasKeyName, iotHubSasKey);
+
             await using var consumer = new EventHubConsumerClient(EventHubConsumerClient.DefaultConsumerGroupName, connectionString, eventHubName);
 
-            var receivedMessages = new HashSet<D2CMessage>();
+            var receivedMessages = new Dictionary<string, IDictionary<string, object>>();
 
             Console.WriteLine("Listening for messages on all partitions");
 
@@ -40,13 +42,7 @@ namespace IotHubConsumer
                     var data = Encoding.UTF8.GetString(partitionEvent.Data.Body.ToArray());
                     Console.WriteLine("\t{0}:", data);
 
-                    var retainFlag = "false";
-                    if (partitionEvent.Data.Properties.ContainsKey("mqtt-retain"))
-                    {
-                        retainFlag = partitionEvent.Data.Properties["mqtt-retain"].ToString();
-                    }
-
-                    receivedMessages.Add(new D2CMessage { Payload = data, RetainFlag = retainFlag });
+                    receivedMessages.TryAdd(data, partitionEvent.Data.Properties);
 
                     Console.WriteLine("Application properties (set by device):");
                     foreach (var prop in partitionEvent.Data.Properties)
@@ -70,9 +66,10 @@ namespace IotHubConsumer
 
             return receivedMessages;
         }
-        private static string BuildEventHubsConnectionString(string eventHubsEndpoint,
-                                                     string iotHubSharedKeyName,
-                                                     string iotHubSharedKey) =>
-        $"Endpoint={ eventHubsEndpoint };SharedAccessKeyName={ iotHubSharedKeyName };SharedAccessKey={ iotHubSharedKey }";
+
+        private static string BuildEventHubsConnectionString(string eventHubsEndpoint, string iotHubSharedKeyName, string iotHubSharedKey)
+        {
+            return $"Endpoint={ eventHubsEndpoint };SharedAccessKeyName={ iotHubSharedKeyName };SharedAccessKey={ iotHubSharedKey }";
+        }
     }
 }

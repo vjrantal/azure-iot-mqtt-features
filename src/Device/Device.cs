@@ -1,19 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Client.Disconnecting;
 using MQTTnet.Client.Options;
 using MQTTnet.Client.Receiving;
 using MQTTnet.Formatter;
 using MQTTnet.Protocol;
 
-namespace MessageSample
+namespace Client
 {
     public class Device
     {
@@ -21,6 +22,7 @@ namespace MessageSample
         private readonly string sharedAccessKey;
         private readonly string hubAddress;
         private readonly string deviceId;
+        private readonly string topicD2C;
 
         public Action<MqttApplicationMessageReceivedEventArgs> ApplicationMessageReceived { get; set; }
 
@@ -33,9 +35,11 @@ namespace MessageSample
             hubAddress = connectionString[0].Split('=', 2)[1];
             deviceId = connectionString[1].Split('=', 2)[1];
             sharedAccessKey = connectionString[2].Split('=', 2)[1];
+
+            topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
         }
 
-        public async Task ConnectDevice()
+        public async Task ConnectDevice(string willPayload = "")
         {
             var username = hubAddress + "/" + deviceId;
             var password = GenerateSasToken(hubAddress + "/devices/" + deviceId, sharedAccessKey);
@@ -44,11 +48,43 @@ namespace MessageSample
                 .WithCredentials(username, password)
                 .WithClientId(deviceId)
                 .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithCleanSession(false)
                 .WithTls()
+                .WithWillMessage(ConstructWillMessage(willPayload))
+                .Build();
+            try
+            {
+                await mqttClient.ConnectAsync(options, CancellationToken.None);
+            }
+            catch (TaskCanceledException e)
+            {
+                // This is expected when the token is signaled; it should not be considered an
+                // error in this scenario.
+                Console.WriteLine(e.ToString());
+            }
+        }
+
+        public async Task DisconnectDevice()
+        {
+            await mqttClient.DisconnectAsync();
+        }
+
+        public async Task ConnectDeviceUsingCertificate(X509Certificate2 certificate)
+        {
+            var certificates = new List<X509Certificate>() { certificate };
+            var options = new MqttClientOptionsBuilder()
+                .WithTcpServer(hubAddress, 8883)
+                .WithCredentials(new MqttClientCredentials() { Username = hubAddress + "/" + deviceId })
+                .WithClientId(deviceId)
+                .WithProtocolVersion(MqttProtocolVersion.V311)
+                .WithTls(new MqttClientOptionsBuilderTlsParameters
+                {
+                    UseTls = true,
+                    Certificates = certificates
+                })
                 .Build();
 
             await mqttClient.ConnectAsync(options, CancellationToken.None);
-            mqttClient.UseDisconnectedHandler(new MqttClientDisconnectedHandlerDelegate(e => Disconnected(e, options)));
         }
 
         public MqttApplicationMessage ConstructMessage(string topic, string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
@@ -59,17 +95,20 @@ namespace MessageSample
                 .WithTopic(topic)
                 .WithPayload(payload)
                 .WithRetainFlag(retainFlag)
-                .WithQualityOfServiceLevel(mqttQoSLevel)
+                .WithAtMostOnceQoS()
                 .Build();
 
             return message;
         }
 
-
-        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, MqttQualityOfServiceLevel mqttQoSLevel = MqttQualityOfServiceLevel.AtLeastOnce)
+        public MqttApplicationMessage ConstructWillMessage(string willPayload, bool retainFlag = true)
         {
-            var topicD2C = $"devices/{deviceId}/messages/events/$.ct=application%2Fjson&$.ce=utf-8";
-            var message = ConstructMessage(topicD2C, payload, retainFlag);
+            return ConstructMessage(topicD2C, "WILL message " + willPayload, retainFlag);
+        }
+
+        public async Task SendDeviceToCloudMessageAsync(string payload, bool retainFlag = false, string topicParameters = "")
+        {
+            var message = ConstructMessage(topicD2C + topicParameters, payload, retainFlag);
 
             Console.WriteLine("PublishAsync start");
             await mqttClient.PublishAsync(message, CancellationToken.None);
@@ -78,28 +117,15 @@ namespace MessageSample
 
         public async Task SubscribeToEventAsync(Action<MqttApplicationMessageReceivedEventArgs> applicationMessageReceived)
         {
-            ApplicationMessageReceived = applicationMessageReceived;
             var topicC2D = $"devices/{deviceId}/messages/devicebound/#";
 
-            mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => ApplicationMessageReceived(e)));
+            mqttClient.UseApplicationMessageReceivedHandler(new MqttApplicationMessageReceivedHandlerDelegate(e => applicationMessageReceived(e)));
             await mqttClient.SubscribeAsync(topicC2D, MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
         }
 
-        private async void Disconnected(MqttClientDisconnectedEventArgs e, IMqttClientOptions options)
+        public void DisconnectUngracefully()
         {
-            Console.WriteLine("Disconnected");
-
-            try
-            {
-                Console.WriteLine("Trying to reconnect");
-                await mqttClient.ConnectAsync(options, CancellationToken.None);
-            }
-            catch
-            {
-                Console.WriteLine("### RECONNECTING FAILED ###");
-            }
-
-            Console.WriteLine("Reconnected");
+            mqttClient.Dispose();
         }
 
         private static string GenerateSasToken(string resourceUri, string key, int expiryInSeconds = 36000)

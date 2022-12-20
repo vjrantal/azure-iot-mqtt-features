@@ -14,5 +14,4 @@
   <ItemGroup>
     <ProjectReference Include="..\CrossCutting\CrossCutting.csproj" />
   </ItemGroup>
-
 </Project>

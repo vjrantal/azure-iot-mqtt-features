@@ -1,7 +1,15 @@
 DEVICE_ID?=device0001
+DEVICE_ID2?=device0002
+DEVICE_ID2?=device0003
 
 create-device:
 	az iot hub device-identity create --device-id $(DEVICE_ID) --hub-name $$(terraform output iothub_name)
+
+create-device-ca-cert:
+	az iot hub device-identity create --device-id $(DEVICE_ID2) --hub-name $$(terraform output iothub_name) --am x509_ca
+
+create-device-selfsign-cert:
+	az iot hub device-identity create --device-id $(DEVICE_ID3) --hub-name $$(terraform output iothub_name) --am x509_ca_thumbprint --ptp {thumbprint} --stp {thumbprint}
 
 list-devices: 
 	az iot hub device-identity list --hub-name $$(terraform output iothub_name)
@@ -9,17 +17,32 @@ list-devices:
 get-device-conn:
 	az iot hub device-identity connection-string show --device-id $(DEVICE_ID) --hub-name $$(terraform output iothub_name)
 
+get-ca-device-conn:
+	az iot hub device-identity connection-string show --device-id $(DEVICE_ID2) --hub-name $$(terraform output iothub_name)
+
+get-selfsign-device-conn:
+	az iot hub device-identity connection-string show --device-id $(DEVICE_ID3) --hub-name $$(terraform output iothub_name)
+
 get-iot-hub-conn:
 	az iot hub connection-string show
 
-get-iot-hub-sas-key:
-	az iot hub policy show --name service --query primaryKey --hub-name $$(terraform output iothub_name)
+get-event-hub-name:
+	az iot hub show --query properties.eventHubEndpoints.events.path --name $$(terraform output iothub_name)
 
 get-event-hub-endpoint:
 	az iot hub show --query properties.eventHubEndpoints.events.endpoint --name $$(terraform output iothub_name)
 
-get-event-hub-name:
-	az iot hub show --query properties.eventHubEndpoints.events.path --name $$(terraform output iothub_name)
+get-iot-hub-sas-key:
+	az iot hub policy show --name service --query primaryKey --hub-name $$(terraform output iothub_name)
+
+get-custom-event-hub-name:
+	terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="azurerm_eventhub.mqtt_iot") | .values.name'
+
+get-custom-event-hub-endpoint:
+	namespace=$$(terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="azurerm_eventhub_namespace.mqtt_iot") | .values.name') && \
+	rg=$$(terraform show -json | jq -r '.values.root_module.resources[] | select(.address=="azurerm_resource_group.mqtt_iot") | .values.name') && \
+	az eventhubs namespace authorization-rule keys list --resource-group $$rg --namespace-name $$namespace --name RootManageSharedAccessKey \
+	| jq -r '.primaryConnectionString'
 
 lint: md-lint md-spell-check md-link-check dotnet-lint
 

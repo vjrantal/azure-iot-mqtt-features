@@ -9,7 +9,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/Device/bin/Debug/netcoreapp3.1/Device.dll",
+            "program": "${workspaceFolder}/src/Device/bin/Debug/netcoreapp3.1/Device.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
@@ -17,11 +17,11 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "IothubConsumer",
+            "name": "IotHubConsumer",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/IotHubConsumer/bin/Debug/netcoreapp3.1/IotHubConsumer.dll",
+            "program": "${workspaceFolder}/src/IotHubConsumer/bin/Debug/netcoreapp3.1/IotHubConsumer.dll",
             "args": [],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",

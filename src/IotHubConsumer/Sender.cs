@@ -7,13 +7,11 @@ namespace IotHubConsumer
 {
     public class Sender
     {
-        private readonly string iotHubConnectionString;
         private readonly string deviceId;
         private ServiceClient serviceClient;
 
         public Sender(string iotHubConnectionString, string deviceId)
         {
-            this.iotHubConnectionString = iotHubConnectionString;
             this.deviceId = deviceId;
             Console.WriteLine("Create connection");
             serviceClient = ServiceClient.CreateFromConnectionString(iotHubConnectionString);
