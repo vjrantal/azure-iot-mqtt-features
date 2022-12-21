@@ -47,6 +47,7 @@ get-custom-event-hub-endpoint:
 lint: md-lint md-spell-check md-link-check dotnet-lint
 
 dotnet-lint:
+	export PATH="$${PATH}:/root/.dotnet/tools"
 	dotnet format --check
 
 format:

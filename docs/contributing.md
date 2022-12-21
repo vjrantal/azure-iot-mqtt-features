@@ -4,19 +4,19 @@ This document is an introduction to contributing to the `azure-iot-mqtt-features
 
 ## Workspace Setup & Building Project
 
-This section describes how to get your developer workspace running for the first time so that you're ready to start making contributions. If you have already done this, check out [Running tests](#development-sdlc).
+This section describes how to get your developer workspace running for the first time so that you're ready to start making contributions.
 
 > Note: All steps are tested with the [.devcontainer/Dockerfile](../.devcontainer/Dockerfile) using bash
 
-### 0. Get the code
+### Get the code
 
-* Clone the repository:
+Clone the repository:
   
   ```bash
   git clone https://github.com/vjrantal/azure-iot-mqtt-features.git
   ```
 
-### A) (Recommended) Docker devcontainer
+### Option A) (Recommended) Docker devcontainer
 
 To develop using docker:
 
@@ -36,9 +36,7 @@ Without VSCode:
   docker run -it -v ${PWD}:/workspaces/terraform-provider-azuredevops dev
   ```
 
-Continue with the guide to [run the provider locally](#4-run-provider-locally).
-
-### B) Manually install dependencies
+### Option B) Manually install dependencies
 
 You will need the following dependencies installed in order to get started:
 
@@ -51,7 +49,7 @@ You will need the following dependencies installed in order to get started:
   * [GNUMake for windows](http://gnuwin32.sourceforge.net/packages/make.htm) (For running [make commands](../makefile))
 * An editor of your choice. We use [Visual Studio Code](https://code.visualstudio.com/Download) but any editor will do.
 
-#### Setup your workspace
+### Setup your workspace
 
 1. Provision Iot Hub with terraform:
      1. Set up [Authenticating terraform using the Az CLI](https://www.terraform.io/docs/providers/azurerm/guides/azure_cli.html)
@@ -63,7 +61,7 @@ You will need the following dependencies installed in order to get started:
         terraform apply
         ```
 
-2. Create a Iot Hub device
+2. Create an Iot Hub device
 
     ```bash
     DEVICE_ID=device0001 make create-device
